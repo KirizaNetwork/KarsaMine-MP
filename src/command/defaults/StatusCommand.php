@@ -23,7 +23,9 @@ declare(strict_types=1);
 
 namespace pocketmine\command\defaults;
 
+use pocketmine\command\Command;
 use pocketmine\command\CommandSender;
+use pocketmine\command\overload\ExecutorOverload;
 use pocketmine\lang\KnownTranslationFactory;
 use pocketmine\permission\DefaultPermissionNames;
 use pocketmine\utils\Process;
@@ -34,18 +36,21 @@ use function microtime;
 use function number_format;
 use function round;
 
-class StatusCommand extends VanillaCommand{
-
-	public function __construct(string $namespace, string $name){
-		parent::__construct(
-			$namespace,
-			$name,
-			KnownTranslationFactory::pocketmine_command_status_description()
-		);
-		$this->setPermission(DefaultPermissionNames::COMMAND_STATUS);
+final class StatusCommand{
+	private function __construct(){
+		//NOOP
 	}
 
-	public function execute(CommandSender $sender, string $commandLabel, array $args){
+	public static function create(string $namespace, string $name) : Command{
+		return new Command(
+			$namespace,
+			$name,
+			new ExecutorOverload([], DefaultPermissionNames::COMMAND_STATUS, self::execute(...)),
+			KnownTranslationFactory::pocketmine_command_status_description()
+		);
+	}
+
+	private static function execute(CommandSender $sender) : void{
 		$mUsage = Process::getAdvancedMemoryUsage();
 
 		$server = $sender->getServer();
@@ -113,7 +118,5 @@ class StatusCommand extends VanillaCommand{
 				"Time $timeColor" . round($world->getTickRateTime(), 2) . "ms"
 			);
 		}
-
-		return true;
 	}
 }

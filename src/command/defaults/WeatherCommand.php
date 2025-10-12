@@ -23,64 +23,73 @@ declare(strict_types=1);
 
 namespace pocketmine\command\defaults;
 
+use pocketmine\command\Command;
 use pocketmine\command\CommandSender;
-use pocketmine\command\utils\InvalidCommandSyntaxException;
+use pocketmine\command\overload\BranchingOverloadBuilder;
+use pocketmine\command\overload\IntRangeParameter;
 use pocketmine\lang\KnownTranslationFactory;
 use pocketmine\permission\DefaultPermissionNames;
 use pocketmine\player\Player;
 use pocketmine\utils\AssumptionFailedError;
 use pocketmine\world\WeatherType;
-use function count;
+use pocketmine\world\World;
 use function max;
-use function strtolower;
+use function mt_rand;
 
-class WeatherCommand extends VanillaCommand{
-
-	public function __construct(string $namespace, string $name){
-		parent::__construct(
-			$namespace,
-			$name,
-			KnownTranslationFactory::pocketmine_command_weather_description(),
-			KnownTranslationFactory::pocketmine_command_weather_usage(),
-		);
-		$this->setPermission(DefaultPermissionNames::COMMAND_WEATHER);
+final class WeatherCommand{
+	private function __construct(){
+		//NOOP
 	}
 
-	public function execute(CommandSender $sender, string $label, array $args) : void{
+	public static function create(string $namespace, string $name) : Command{
+		$durationParameter = new IntRangeParameter("duration", "duration", 0, 1000000);
+		return new Command(
+			$namespace,
+			$name,
+			BranchingOverloadBuilder::make()
+				->executor([], DefaultPermissionNames::COMMAND_WEATHER, self::getWeather(...))
+				->executor(["clear", $durationParameter], DefaultPermissionNames::COMMAND_WEATHER, self::clearWeather(...))
+				->executor(["rain", $durationParameter], DefaultPermissionNames::COMMAND_WEATHER, self::rainWeather(...))
+				->executor(["thunder", $durationParameter], DefaultPermissionNames::COMMAND_WEATHER, self::thunderWeather(...))
+				->build(),
+			KnownTranslationFactory::pocketmine_command_weather_description(),
+		);
+	}
+
+	private static function getWorld(CommandSender $sender) : World{
 		if($sender instanceof Player){
 			$world = $sender->getWorld();
 		}else{
 			$world = $sender->getServer()->getWorldManager()->getDefaultWorld();
 		}
 
-		if($world === null){
-			throw new AssumptionFailedError("Failed to retrieve world instance. Default world is not loaded.");
-		}
+		return $world ?? throw new AssumptionFailedError("Failed to retrieve world instance. Default world is not loaded.");
+	}
 
-		if(count($args) < 1){
-			$current = $world->getWeather();
-			$stateName = match($current){
-				WeatherType::CLEAR => KnownTranslationFactory::commands_weather_query_clear(),
-				WeatherType::RAIN => KnownTranslationFactory::commands_weather_query_rain(),
-				WeatherType::THUNDER => KnownTranslationFactory::commands_weather_query_thunder(),
-			};
-			$sender->sendMessage(KnownTranslationFactory::commands_weather_query($stateName));
-			return;
-		}
+	private static function getWeather(CommandSender $sender) : void{
+		$world = self::getWorld($sender);
 
-		$type = match(strtolower($args[0])){
-			"clear" => WeatherType::CLEAR,
-			"rain" => WeatherType::RAIN,
-			"thunder" => WeatherType::THUNDER,
-			default => throw new InvalidCommandSyntaxException(),
+		$current = $world->getWeather();
+		$stateName = match($current){
+			WeatherType::CLEAR => KnownTranslationFactory::commands_weather_query_clear(),
+			WeatherType::RAIN => KnownTranslationFactory::commands_weather_query_rain(),
+			WeatherType::THUNDER => KnownTranslationFactory::commands_weather_query_thunder(),
 		};
+		$sender->sendMessage(KnownTranslationFactory::commands_weather_query($stateName));
+	}
 
-		$duration = isset($args[1]) ? max(100, (int) $args[1]) : 6000;
-		$world->setWeather($type, $duration);
-		$sender->sendMessage(match($type){
-			WeatherType::CLEAR => KnownTranslationFactory::commands_weather_clear(),
-			WeatherType::RAIN => KnownTranslationFactory::commands_weather_rain(),
-			WeatherType::THUNDER => KnownTranslationFactory::commands_weather_thunder(),
-		});
+	private static function clearWeather(CommandSender $sender, ?int $duration = null) : void{
+		self::getWorld($sender)->setWeather(WeatherType::CLEAR, max(100, $duration ?? mt_rand(6000, 18000)));
+		$sender->sendMessage(KnownTranslationFactory::commands_weather_clear());
+	}
+
+	private static function rainWeather(CommandSender $sender, ?int $duration = null) : void{
+		self::getWorld($sender)->setWeather(WeatherType::RAIN, max(100, $duration ?? mt_rand(6000, 18000)));
+		$sender->sendMessage(KnownTranslationFactory::commands_weather_rain());
+	}
+
+	private static function thunderWeather(CommandSender $sender, ?int $duration = null) : void{
+		self::getWorld($sender)->setWeather(WeatherType::THUNDER, max(100, $duration ?? mt_rand(6000, 18000)));
+		$sender->sendMessage(KnownTranslationFactory::commands_weather_thunder());
 	}
 }

@@ -23,81 +23,88 @@ declare(strict_types=1);
 
 namespace pocketmine\command\defaults;
 
+use pocketmine\command\Command;
 use pocketmine\command\CommandSender;
-use pocketmine\command\utils\InvalidCommandSyntaxException;
+use pocketmine\command\overload\BoolParameter;
+use pocketmine\command\overload\BranchingOverloadBuilder;
+use pocketmine\command\overload\IntRangeParameter;
+use pocketmine\command\overload\MappedParameter;
+use pocketmine\command\overload\ParameterParseException;
+use pocketmine\command\overload\StringParameter;
+use pocketmine\entity\effect\Effect;
 use pocketmine\entity\effect\EffectInstance;
 use pocketmine\entity\effect\StringToEffectParser;
 use pocketmine\lang\KnownTranslationFactory;
 use pocketmine\permission\DefaultPermissionNames;
 use pocketmine\utils\Limits;
-use pocketmine\utils\TextFormat;
 use function count;
-use function strtolower;
 
-class EffectCommand extends VanillaCommand{
+final class EffectCommand{
 
-	public function __construct(string $namespace, string $name){
-		parent::__construct(
-			$namespace,
-			$name,
-			KnownTranslationFactory::pocketmine_command_effect_description(),
-			KnownTranslationFactory::commands_effect_usage()
-		);
-		$this->setPermissions([
-			DefaultPermissionNames::COMMAND_EFFECT_SELF,
-			DefaultPermissionNames::COMMAND_EFFECT_OTHER
-		]);
+	private const SELF_PERM = DefaultPermissionNames::COMMAND_EFFECT_OTHER;
+	private const OTHER_PERM = DefaultPermissionNames::COMMAND_EFFECT_OTHER;
+
+	private const OVERLOAD_PERMS = [self::SELF_PERM, self::OTHER_PERM];
+
+	private function __construct(){
+		//NOOP
 	}
 
-	public function execute(CommandSender $sender, string $commandLabel, array $args){
-		if(count($args) < 2){
-			throw new InvalidCommandSyntaxException();
-		}
+	public static function create(string $namespace, string $name) : Command{
+		return new Command(
+			$namespace,
+			$name,
+			BranchingOverloadBuilder::make(commonParameters: [
+				new StringParameter("target", "target")
+			])
+				->executor(
+					["clear"],
 
-		$player = $this->fetchPermittedPlayerTarget($commandLabel, $sender, $args[0], DefaultPermissionNames::COMMAND_EFFECT_SELF, DefaultPermissionNames::COMMAND_EFFECT_OTHER);
+					//TODO: our permission system isn't granular enough for this right now - the permission required
+					//differs not by the usage, but by the target selected
+					self::OVERLOAD_PERMS, self::removeEffect(...),
+				)
+				->executor([
+					new MappedParameter("effect", "effect name", static fn(string $v) : Effect =>
+						StringToEffectParser::getInstance()->parse($v) ??
+						throw new ParameterParseException("Invalid effect name")
+					),
+					new IntRangeParameter("duration", "duration", 0, (int) (Limits::INT32_MAX / 20)),
+					new IntRangeParameter("amplifier", "amplifier", 0, 255),
+					new BoolParameter("bubbles", "bubbles")
+
+					//TODO: our permission system isn't granular enough for this right now - the permission required
+					//differs not by the usage, but by the target selected
+				], self::OVERLOAD_PERMS, self::modifyEffect(...))
+				->build(),
+			KnownTranslationFactory::pocketmine_command_effect_description(),
+		);
+	}
+
+	private static function removeEffect(CommandSender $sender, string $target) : void{
+		$player = Command::fetchPermittedPlayerTarget($sender, $target, self::SELF_PERM, self::OTHER_PERM);
 		if($player === null){
-			return true;
+			return;
 		}
 		$effectManager = $player->getEffects();
+		$effectManager->clear();
 
-		if(strtolower($args[1]) === "clear"){
-			$effectManager->clear();
+		$sender->sendMessage(KnownTranslationFactory::commands_effect_success_removed_all($player->getDisplayName()));
+	}
 
-			$sender->sendMessage(KnownTranslationFactory::commands_effect_success_removed_all($player->getDisplayName()));
-			return true;
+	private static function modifyEffect(
+		CommandSender $sender,
+		string $target,
+		Effect $effect,
+		?int $duration = null,
+		int $amplifier = 0,
+		bool $bubbles = true
+	) : void{
+		$player = Command::fetchPermittedPlayerTarget($sender, $target, self::SELF_PERM, self::OTHER_PERM);
+		if($player === null){
+			return;
 		}
-
-		$effect = StringToEffectParser::getInstance()->parse($args[1]);
-		if($effect === null){
-			$sender->sendMessage(KnownTranslationFactory::commands_effect_notFound($args[1])->prefix(TextFormat::RED));
-			return true;
-		}
-
-		$amplification = 0;
-
-		if(count($args) >= 3){
-			if(($d = $this->getBoundedInt($sender, $args[2], 0, (int) (Limits::INT32_MAX / 20))) === null){
-				return false;
-			}
-			$duration = $d * 20; //ticks
-		}else{
-			$duration = null;
-		}
-
-		if(count($args) >= 4){
-			$amplification = $this->getBoundedInt($sender, $args[3], 0, 255);
-			if($amplification === null){
-				return false;
-			}
-		}
-
-		$visible = true;
-		if(count($args) >= 5){
-			$v = strtolower($args[4]);
-			if($v === "on" || $v === "true" || $v === "t" || $v === "1"){
-				$visible = false;
-			}
-		}
+		$effectManager = $player->getEffects();
 
 		if($duration === 0){
 			if(!$effectManager->has($effect)){
@@ -106,17 +113,15 @@ class EffectCommand extends VanillaCommand{
 				}else{
 					$sender->sendMessage(KnownTranslationFactory::commands_effect_failure_notActive($effect->getName(), $player->getDisplayName()));
 				}
-				return true;
+				return;
 			}
 
 			$effectManager->remove($effect);
 			$sender->sendMessage(KnownTranslationFactory::commands_effect_success_removed($effect->getName(), $player->getDisplayName()));
 		}else{
-			$instance = new EffectInstance($effect, $duration, $amplification, $visible);
+			$instance = new EffectInstance($effect, $duration !== null ? $duration * 20 : null, $amplifier, $bubbles);
 			$effectManager->add($instance);
-			self::broadcastCommandMessage($sender, KnownTranslationFactory::commands_effect_success($effect->getName(), (string) $instance->getAmplifier(), $player->getDisplayName(), (string) ($instance->getDuration() / 20)));
+			Command::broadcastCommandMessage($sender, KnownTranslationFactory::commands_effect_success($effect->getName(), (string) $instance->getAmplifier(), $player->getDisplayName(), (string) ($instance->getDuration() / 20)));
 		}
-
-		return true;
 	}
 }
