@@ -26,6 +26,7 @@ namespace pocketmine\item;
 use pocketmine\block\Block;
 use pocketmine\block\BlockTypeIds;
 use pocketmine\block\Liquid;
+use pocketmine\block\utils\Waterloggable;
 use pocketmine\block\VanillaBlocks;
 use pocketmine\event\player\PlayerBucketFillEvent;
 use pocketmine\math\Facing;
@@ -40,11 +41,23 @@ class Bucket extends Item{
 
 	public function onInteractBlock(Player $player, Block $blockReplace, Block $blockClicked, Facing $face, Vector3 $clickVector, array &$returnedItems) : ItemUseResult{
 		//TODO: move this to generic placement logic
-		if($blockClicked instanceof Liquid && $blockClicked->isSource()){
+
+		if($blockClicked instanceof Waterloggable && ($water = $blockClicked->getContainedWater()) !== null && $water->isSource()){
+			$resultBlock = (clone $blockClicked)->setContainedWater(null);
+			$liquid = $blockClicked->getContainedWater();
+		}elseif($blockClicked instanceof Liquid && $blockClicked->isSource()){
+			$resultBlock = VanillaBlocks::AIR();
+			$liquid = $blockClicked;
+		}else{
+			$resultBlock = null;
+			$liquid = null;
+		}
+
+		if($resultBlock !== null && $liquid !== null){
 			$stack = clone $this;
 			$stack->pop();
 
-			$resultItem = match($blockClicked->getTypeId()){
+			$resultItem = match($liquid->getTypeId()){
 				BlockTypeIds::LAVA => VanillaItems::LAVA_BUCKET(),
 				BlockTypeIds::WATER => VanillaItems::WATER_BUCKET(),
 				default => null
@@ -53,11 +66,11 @@ class Bucket extends Item{
 				return ItemUseResult::FAIL;
 			}
 
-			$ev = new PlayerBucketFillEvent($player, $blockReplace, $face, $this, $resultItem);
+			$ev = new PlayerBucketFillEvent($player, $blockClicked, $face, $this, $resultItem);
 			$ev->call();
 			if(!$ev->isCancelled()){
-				$player->getWorld()->setBlock($blockClicked->getPosition(), VanillaBlocks::AIR());
-				$player->getWorld()->addSound($blockClicked->getPosition()->add(0.5, 0.5, 0.5), $blockClicked->getBucketFillSound());
+				$player->getWorld()->setBlock($blockClicked->getPosition(), $resultBlock);
+				$player->getWorld()->addSound($blockClicked->getPosition()->add(0.5, 0.5, 0.5), $liquid->getBucketFillSound());
 
 				$this->pop();
 				$returnedItems[] = $ev->getItem();

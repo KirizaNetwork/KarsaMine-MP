@@ -84,6 +84,30 @@ class SubChunk{
 	}
 
 	/**
+	 * Returns the internal ID of the blockstate at the second layer.
+	 */
+	public function getDisplacedBlockStateId(int $x, int $y, int $z) : int{
+		return $this->blockLayer1?->get($x, $y, $z) ?? $this->emptyBlockId;
+	}
+
+	/**
+	 * Sets the given internal block state ID to the second layer.
+	 */
+	public function setDisplacedBlockStateId(int $x, int $y, int $z, int $block) : void{
+		if($this->blockLayer1 === null){
+			if($block === $this->emptyBlockId){
+				return;
+			}
+
+			if($this->blockLayer0 === null){
+				$this->blockLayer0 = new PalettedBlockArray($this->emptyBlockId);
+			}
+			$this->blockLayer1 = new PalettedBlockArray($this->emptyBlockId);
+		}
+		$this->blockLayer1->set($x, $y, $z, $block);
+	}
+
+	/**
 	 * @return PalettedBlockArray[]
 	 * @phpstan-return array{}|array{PalettedBlockArray}|array{PalettedBlockArray, PalettedBlockArray}
 	 */

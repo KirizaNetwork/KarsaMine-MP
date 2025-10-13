@@ -29,6 +29,8 @@ use pocketmine\block\utils\BrewingStandSlot;
 use pocketmine\block\utils\Container;
 use pocketmine\block\utils\ContainerTrait;
 use pocketmine\block\utils\SupportType;
+use pocketmine\block\utils\Waterloggable;
+use pocketmine\block\utils\WaterloggableTrait;
 use pocketmine\data\runtime\RuntimeDataDescriber;
 use pocketmine\inventory\Inventory;
 use pocketmine\math\Axis;
@@ -39,8 +41,9 @@ use pocketmine\world\Position;
 use function array_key_exists;
 use function spl_object_id;
 
-class BrewingStand extends Transparent implements Container{
+class BrewingStand extends Transparent implements Container, Waterloggable{
 	use ContainerTrait;
+	use WaterloggableTrait;
 
 	/**
 	 * @var BrewingStandSlot[]

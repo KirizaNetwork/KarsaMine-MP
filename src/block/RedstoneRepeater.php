@@ -23,23 +23,33 @@ declare(strict_types=1);
 
 namespace pocketmine\block;
 
-use pocketmine\block\utils\FacesOppositePlacingPlayerTrait;
 use pocketmine\block\utils\HorizontalFacing;
+use pocketmine\block\utils\HorizontalFacingOption;
+use pocketmine\block\utils\HorizontalFacingTrait;
 use pocketmine\block\utils\PoweredByRedstone;
 use pocketmine\block\utils\PoweredByRedstoneTrait;
 use pocketmine\block\utils\StaticSupportTrait;
 use pocketmine\block\utils\SupportType;
+use pocketmine\block\utils\Waterloggable;
+use pocketmine\block\utils\WaterloggableTrait;
 use pocketmine\data\runtime\RuntimeDataDescriber;
 use pocketmine\item\Item;
 use pocketmine\math\AxisAlignedBB;
 use pocketmine\math\Facing;
 use pocketmine\math\Vector3;
 use pocketmine\player\Player;
+use pocketmine\world\BlockTransaction;
 
-class RedstoneRepeater extends Flowable implements PoweredByRedstone, HorizontalFacing{
-	use FacesOppositePlacingPlayerTrait;
+class RedstoneRepeater extends WaterloggableFlowable implements PoweredByRedstone, HorizontalFacing, Waterloggable{
+	use HorizontalFacingTrait;
 	use PoweredByRedstoneTrait;
-	use StaticSupportTrait;
+	use StaticSupportTrait{
+		StaticSupportTrait::onNearbyBlockChange as onSupportBlockChange;
+	}
+	use WaterloggableTrait{
+		place as waterPlace;
+		WaterloggableTrait::onNearbyBlockChange as onWaterBlockChange;
+	}
 
 	public const MIN_DELAY = 1;
 	public const MAX_DELAY = 4;
@@ -67,12 +77,25 @@ class RedstoneRepeater extends Flowable implements PoweredByRedstone, Horizontal
 		return [AxisAlignedBB::one()->trimmedCopy(Facing::UP, 7 / 8)];
 	}
 
+	public function place(BlockTransaction $tx, Item $item, Block $blockReplace, Block $blockClicked, Facing $face, Vector3 $clickVector, ?Player $player = null) : bool{
+		if($player !== null){
+			$this->facing = HorizontalFacingOption::fromFacing(Facing::opposite($player->getHorizontalFacing()));
+		}
+
+		return $this->waterPlace($tx, $item, $blockReplace, $blockClicked, $face, $clickVector, $player);
+	}
+
 	public function onInteract(Item $item, Facing $face, Vector3 $clickVector, ?Player $player = null, array &$returnedItems = []) : bool{
 		if(++$this->delay > self::MAX_DELAY){
 			$this->delay = self::MIN_DELAY;
 		}
 		$this->position->getWorld()->setBlock($this->position, $this);
 		return true;
+	}
+
+	public function onNearbyBlockChange() : void{
+		$this->onWaterBlockChange();
+		$this->onSupportBlockChange();
 	}
 
 	private function canBeSupportedAt(Block $block) : bool{

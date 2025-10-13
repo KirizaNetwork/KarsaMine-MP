@@ -23,35 +23,18 @@ declare(strict_types=1);
 
 namespace pocketmine\block;
 
-use pocketmine\block\utils\SupportType;
+use pocketmine\block\utils\Waterloggable;
 use pocketmine\math\Facing;
 use pocketmine\math\Vector3;
 
 /**
- * "Flowable" blocks are destroyed if water flows into the same space as the block. These blocks usually don't have any
- * collision boxes, and can't provide support for other blocks.
+ * Flowable blocks that can be waterlogged.
  */
-abstract class Flowable extends Transparent{
-
-	public function canBeFlowedInto() : bool{
-		return true;
-	}
-
-	public function isSolid() : bool{
-		return false;
-	}
+abstract class WaterloggableFlowable extends Flowable implements Waterloggable{
 
 	public function canBePlacedAt(Block $blockReplace, Vector3 $clickVector, Facing $face, bool $isClickedBlock) : bool{
 		return
-			(!$this->canBeFlowedInto() || !$blockReplace instanceof Liquid) &&
+			($this->canBeWaterlogged() && $blockReplace instanceof Water && ($blockReplace->isSource() || $this->hasTypeTag(BlockTypeTags::NON_SOURCE_WATERLOGGABLE))) ||
 			parent::canBePlacedAt($blockReplace, $clickVector, $face, $isClickedBlock);
-	}
-
-	protected function recalculateCollisionBoxes() : array{
-		return [];
-	}
-
-	public function getSupportType(Facing $facing) : SupportType{
-		return SupportType::NONE;
 	}
 }
