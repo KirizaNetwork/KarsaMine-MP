@@ -63,6 +63,7 @@ use pocketmine\command\defaults\TimingsCommand;
 use pocketmine\command\defaults\TitleCommand;
 use pocketmine\command\defaults\TransferServerCommand;
 use pocketmine\command\defaults\VersionCommand;
+use pocketmine\command\defaults\WeatherCommand;
 use pocketmine\command\defaults\WhitelistCommand;
 use pocketmine\command\defaults\XpCommand;
 use pocketmine\command\utils\CommandStringHelper;
@@ -141,6 +142,7 @@ class SimpleCommandMap implements CommandMap{
 		$this->register(new TitleCommand($pmPrefix, "title"));
 		$this->register(new TransferServerCommand($pmPrefix, "transferserver"));
 		$this->register(new VersionCommand($pmPrefix, "version"), ["ver", "about"]);
+		$this->register(new WeatherCommand($pmPrefix, "weather"));
 		$this->register(new WhitelistCommand($pmPrefix, "whitelist"));
 		$this->register(new XpCommand($pmPrefix, "xp"));
 	}
