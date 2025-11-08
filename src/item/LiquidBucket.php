@@ -61,6 +61,7 @@ class LiquidBucket extends Item{
 	public function onInteractBlock(Player $player, Block $blockReplace, Block $blockClicked, Facing $face, Vector3 $clickVector, array &$returnedItems) : ItemUseResult{
 		//TODO: move this to generic placement logic
 
+		$blockClicked = $player->getWorld()->getBlock($blockClicked->getPosition()); //We might interact a displaced block
 		$targetBlock = null;
 		$resultBlock = null;
 
