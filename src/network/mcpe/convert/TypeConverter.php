@@ -23,10 +23,6 @@ declare(strict_types=1);
 
 namespace pocketmine\network\mcpe\convert;
 
-use DaveRandom\CallbackValidator\BuiltInTypes;
-use DaveRandom\CallbackValidator\CallbackType;
-use DaveRandom\CallbackValidator\ParameterType;
-use DaveRandom\CallbackValidator\ReturnType;
 use pmmp\encoding\ByteBufferReader;
 use pmmp\encoding\ByteBufferWriter;
 use pocketmine\block\tile\ContainerTile;
@@ -399,10 +395,7 @@ class TypeConverter{
 	 * @phpstan-param \Closure(TypeConverter) : ClientboundPacket[] $closure
 	 */
 	public static function broadcastByTypeConverter(array $players, \Closure $closure) : void{
-		Utils::validateCallableSignature(new CallbackType(
-			new ReturnType(BuiltInTypes::ARRAY, ReturnType::COVARIANT),
-			new ParameterType('typeConverter', TypeConverter::class),
-		), $closure);
+		Utils::validateCallableSignature(fn(TypeConverter $typeConverter) : array => [], $closure);
 
 		[$typeConverters, $converterRecipients] = self::sortByConverter($players);
 

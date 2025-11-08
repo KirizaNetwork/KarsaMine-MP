@@ -26,10 +26,6 @@ declare(strict_types=1);
  */
 namespace pocketmine\world;
 
-use DaveRandom\CallbackValidator\BuiltInTypes;
-use DaveRandom\CallbackValidator\CallbackType;
-use DaveRandom\CallbackValidator\ParameterType;
-use DaveRandom\CallbackValidator\ReturnType;
 use pocketmine\block\Air;
 use pocketmine\block\Block;
 use pocketmine\block\BlockTypeIds;
@@ -867,10 +863,7 @@ class World implements ChunkManager{
 	 * @phpstan-param \Closure(TypeConverter) : ClientboundPacket[] $closure
 	 */
 	private function broadcastPacketToPlayersByTypeConverterUsingChunk(int $chunkX, int $chunkZ, \Closure $closure) : void{
-		Utils::validateCallableSignature(new CallbackType(
-			new ReturnType(BuiltInTypes::ARRAY, ReturnType::COVARIANT),
-			new ParameterType('typeConverter', TypeConverter::class),
-		), $closure);
+		Utils::validateCallableSignature(fn(TypeConverter $typeConverter) : array => [], $closure);
 
 		if(!isset($this->packetBuffersByChunkTypeConverter[$index = World::chunkHash($chunkX, $chunkZ)])){
 			$this->packetBuffersByChunkTypeConverter[$index] = [$closure];

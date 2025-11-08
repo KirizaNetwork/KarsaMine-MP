@@ -34,7 +34,7 @@ use pocketmine\network\mcpe\protocol\types\LevelEvent;
  */
 class BlockPunchParticle extends BlockParticle{
 	public function __construct(
-		private Block $block,
+		Block $block,
 		private Facing $face
 	){
 		parent::__construct($block);

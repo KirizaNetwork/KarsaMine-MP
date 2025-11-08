@@ -30,7 +30,6 @@ use pocketmine\math\Vector3;
 use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\nbt\tag\IntTag;
 use pocketmine\network\mcpe\convert\TypeConverter;
-use pocketmine\world\format\Chunk;
 use pocketmine\world\World;
 use function abs;
 
