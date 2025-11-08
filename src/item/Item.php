@@ -38,6 +38,7 @@ use pocketmine\data\SavedDataLoadingException;
 use pocketmine\entity\Entity;
 use pocketmine\entity\Living;
 use pocketmine\item\enchantment\EnchantmentInstance;
+use pocketmine\math\Facing;
 use pocketmine\math\Vector3;
 use pocketmine\nbt\LittleEndianNbtSerializer;
 use pocketmine\nbt\NBT;
@@ -126,7 +127,7 @@ class Item implements \JsonSerializable{
 	/**
 	 * @return $this
 	 */
-	public function clearCustomBlockData(){
+	public function clearCustomBlockData() : Item{
 		$this->blockEntityTag = null;
 		return $this;
 	}
@@ -203,11 +204,12 @@ class Item implements \JsonSerializable{
 	/**
 	 * @param string[] $canPlaceOn
 	 */
-	public function setCanPlaceOn(array $canPlaceOn) : void{
+	public function setCanPlaceOn(array $canPlaceOn) : Item{
 		$this->canPlaceOn = [];
 		foreach($canPlaceOn as $value){
 			$this->canPlaceOn[$value] = $value;
 		}
+		return $this;
 	}
 
 	/**
@@ -221,11 +223,12 @@ class Item implements \JsonSerializable{
 	/**
 	 * @param string[] $canDestroy
 	 */
-	public function setCanDestroy(array $canDestroy) : void{
+	public function setCanDestroy(array $canDestroy) : Item{
 		$this->canDestroy = [];
 		foreach($canDestroy as $value){
 			$this->canDestroy[$value] = $value;
 		}
+		return $this;
 	}
 
 	/**
@@ -235,8 +238,9 @@ class Item implements \JsonSerializable{
 		return $this->keepOnDeath;
 	}
 
-	public function setKeepOnDeath(bool $keepOnDeath) : void{
+	public function setKeepOnDeath(bool $keepOnDeath) : Item{
 		$this->keepOnDeath = $keepOnDeath;
+		return $this;
 	}
 
 	/**
@@ -482,7 +486,7 @@ class Item implements \JsonSerializable{
 		return $this->getBlock()->canBePlaced();
 	}
 
-	protected final function tryPlacementTransaction(Block $blockPlace, Block $blockReplace, Block $blockClicked, int $face, Vector3 $clickVector, ?Player $player) : ?BlockTransaction{
+	protected final function tryPlacementTransaction(Block $blockPlace, Block $blockReplace, Block $blockClicked, Facing $face, Vector3 $clickVector, ?Player $player) : ?BlockTransaction{
 		$position = $blockReplace->getPosition();
 		$blockPlace->position($position->getWorld(), $position->getFloorX(), $position->getFloorY(), $position->getFloorZ());
 		if(!$blockPlace->canBePlacedAt($blockReplace, $clickVector, $face, $blockReplace->getPosition()->equals($blockClicked->getPosition()))){
@@ -492,14 +496,14 @@ class Item implements \JsonSerializable{
 		return $blockPlace->place($transaction, $this, $blockReplace, $blockClicked, $face, $clickVector, $player) ? $transaction : null;
 	}
 
-	public function getPlacementTransaction(Block $blockReplace, Block $blockClicked, int $face, Vector3 $clickVector, ?Player $player = null) : ?BlockTransaction{
+	public function getPlacementTransaction(Block $blockReplace, Block $blockClicked, Facing $face, Vector3 $clickVector, ?Player $player = null) : ?BlockTransaction{
 		return $this->tryPlacementTransaction($this->getBlock($face), $blockReplace, $blockClicked, $face, $clickVector, $player);
 	}
 
 	/**
 	 * Returns the block corresponding to this Item.
 	 */
-	public function getBlock(?int $clickedFace = null) : Block{
+	public function getBlock(?Facing $clickedFace = null) : Block{
 		return VanillaBlocks::AIR();
 	}
 
@@ -598,7 +602,7 @@ class Item implements \JsonSerializable{
 	 *
 	 * @param Item[] &$returnedItems Items to be added to the target's inventory (or dropped, if the inventory is full)
 	 */
-	public function onInteractBlock(Player $player, Block $blockReplace, Block $blockClicked, int $face, Vector3 $clickVector, array &$returnedItems) : ItemUseResult{
+	public function onInteractBlock(Player $player, Block $blockReplace, Block $blockClicked, Facing $face, Vector3 $clickVector, array &$returnedItems) : ItemUseResult{
 		return ItemUseResult::NONE;
 	}
 

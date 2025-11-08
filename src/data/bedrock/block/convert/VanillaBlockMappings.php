@@ -82,7 +82,6 @@ use pocketmine\block\SeaPickle;
 use pocketmine\block\SmallDripleaf;
 use pocketmine\block\SnowLayer;
 use pocketmine\block\Sponge;
-use pocketmine\block\StraightOnlyRail;
 use pocketmine\block\Sugarcane;
 use pocketmine\block\SweetBerryBush;
 use pocketmine\block\TNT;
@@ -98,10 +97,12 @@ use pocketmine\block\utils\DripleafState;
 use pocketmine\block\utils\DyeColor;
 use pocketmine\block\utils\FroglightType;
 use pocketmine\block\utils\HorizontalFacing;
+use pocketmine\block\utils\HorizontalFacingOption;
 use pocketmine\block\utils\LeverFacing;
 use pocketmine\block\utils\MobHeadType;
 use pocketmine\block\utils\MushroomBlockType;
 use pocketmine\block\utils\PoweredByRedstone;
+use pocketmine\block\utils\RailShape;
 use pocketmine\block\VanillaBlocks as Blocks;
 use pocketmine\block\Vine;
 use pocketmine\data\bedrock\block\BlockLegacyMetadata;
@@ -123,6 +124,7 @@ use pocketmine\data\bedrock\block\convert\property\ValueFromIntProperty;
 use pocketmine\data\bedrock\block\convert\property\ValueFromStringProperty;
 use pocketmine\data\bedrock\block\convert\property\ValueMappings;
 use pocketmine\data\bedrock\block\convert\property\ValueSetFromIntProperty;
+use pocketmine\math\Axis;
 use pocketmine\math\Facing;
 use function array_map;
 use function min;
@@ -442,6 +444,7 @@ final class VanillaBlockMappings{
 		$reg->mapSimple(Blocks::SPORE_BLOSSOM(), Ids::SPORE_BLOSSOM);
 		$reg->mapSimple(Blocks::STONE(), Ids::STONE);
 		$reg->mapSimple(Blocks::STONE_BRICKS(), Ids::STONE_BRICKS);
+		$reg->mapSimple(Blocks::STRUCTURE_VOID(), Ids::STRUCTURE_VOID);
 		$reg->mapSimple(Blocks::TALL_GRASS(), Ids::SHORT_GRASS);  //no, this is not a typo - tall_grass is now the double block, just to be confusing :(
 		$reg->mapSimple(Blocks::TINTED_GLASS(), Ids::TINTED_GLASS);
 		$reg->mapSimple(Blocks::TORCHFLOWER(), Ids::TORCHFLOWER);
@@ -464,6 +467,11 @@ final class VanillaBlockMappings{
 		$reg->mapSimple(Blocks::WHITE_TULIP(), Ids::WHITE_TULIP);
 
 		$reg->mapSimple(Blocks::CACTUS_FLOWER(), Ids::CACTUS_FLOWER);
+		$reg->mapSimple(Blocks::CRIMSON_FUNGUS(), Ids::CRIMSON_FUNGUS);
+		$reg->mapSimple(Blocks::WARPED_FUNGUS(), Ids::WARPED_FUNGUS);
+		$reg->mapSimple(Blocks::NETHER_SPROUTS(), Ids::NETHER_SPROUTS);
+		$reg->mapSimple(Blocks::CRIMSON_NYLIUM(), Ids::CRIMSON_NYLIUM);
+		$reg->mapSimple(Blocks::WARPED_NYLIUM(), Ids::WARPED_NYLIUM);
 	}
 
 	private static function registerColoredMappings(BlockSerializerDeserializerRegistrar $reg, CommonProperties $commonProperties) : void{
@@ -589,12 +597,13 @@ final class VanillaBlockMappings{
 		$reg->mapModel(Model::create(Blocks::VINES(), Ids::VINE)->properties([
 			new ValueSetFromIntProperty(
 				StateNames::VINE_DIRECTION_BITS,
-				IntFromRawStateMap::int([
-					Facing::NORTH => BlockLegacyMetadata::VINE_FLAG_NORTH,
-					Facing::SOUTH => BlockLegacyMetadata::VINE_FLAG_SOUTH,
-					Facing::WEST => BlockLegacyMetadata::VINE_FLAG_WEST,
-					Facing::EAST => BlockLegacyMetadata::VINE_FLAG_EAST,
-				]),
+				EnumFromRawStateMap::int(HorizontalFacingOption::class, fn(HorizontalFacingOption $case) => match($case) {
+					HorizontalFacingOption::NORTH => BlockLegacyMetadata::VINE_FLAG_NORTH,
+					HorizontalFacingOption::SOUTH => BlockLegacyMetadata::VINE_FLAG_SOUTH,
+					HorizontalFacingOption::WEST => BlockLegacyMetadata::VINE_FLAG_WEST,
+					HorizontalFacingOption::EAST => BlockLegacyMetadata::VINE_FLAG_EAST,
+				}),
+				//TODO: hack for lack of HorizontalFacing enum :(
 				fn(Vine $b) => $b->getFaces(),
 				fn(Vine $b, array $v) => $b->setFaces($v)
 			)
@@ -616,13 +625,14 @@ final class VanillaBlockMappings{
 		$reg->mapFlattenedId(FlattenedIdModel::create(Blocks::CORAL_FAN())
 			->idComponents([...$commonProperties->coralIdPrefixes, "_coral_fan"])
 			->properties([
-				new ValueFromIntProperty(StateNames::CORAL_FAN_DIRECTION, ValueMappings::getInstance()->coralAxis, fn(FloorCoralFan $b) => $b->getAxis(), fn(FloorCoralFan $b, int $v) => $b->setAxis($v))
+				//TODO: hack for lack of horizontal axis enum :(
+				new ValueFromIntProperty(StateNames::CORAL_FAN_DIRECTION, ValueMappings::getInstance()->coralAxis, fn(FloorCoralFan $b) => $b->getAxis()->value, fn(FloorCoralFan $b, int $v) => $b->setAxis(Axis::from($v)))
 			])
 		);
 		$reg->mapFlattenedId(FlattenedIdModel::create(Blocks::WALL_CORAL_FAN())
 			->idComponents([...$commonProperties->coralIdPrefixes, "_coral_wall_fan"])
 			->properties([
-				new ValueFromIntProperty(StateNames::CORAL_DIRECTION, ValueMappings::getInstance()->horizontalFacingCoral, fn(HorizontalFacing $b) => $b->getFacing(), fn(HorizontalFacing $b, int $v) => $b->setFacing($v)),
+				new ValueFromIntProperty(StateNames::CORAL_DIRECTION, ValueMappings::getInstance()->horizontalFacingCoral, fn(HorizontalFacing $b) => $b->getFacing(), fn(HorizontalFacing $b, HorizontalFacingOption $v) => $b->setFacing($v)),
 			])
 		);
 	}
@@ -777,7 +787,7 @@ final class VanillaBlockMappings{
 				new ValueFromStringProperty("id", ValueMappings::getInstance()->mobHeadType, fn(MobHead $b) => $b->getMobHeadType(), fn(MobHead $b, MobHeadType $v) => $b->setMobHeadType($v)),
 			])
 			->properties([
-				new ValueFromIntProperty(StateNames::FACING_DIRECTION, ValueMappings::getInstance()->facingExceptDown, fn(MobHead $b) => $b->getFacing(), fn(MobHead $b, int $v) => $b->setFacing($v))
+				new ValueFromIntProperty(StateNames::FACING_DIRECTION, ValueMappings::getInstance()->facingExceptDown, fn(MobHead $b) => $b->getFacing()->value, fn(MobHead $b, int $v) => $b->setFacing(Facing::from($v)))
 			])
 		);
 
@@ -1237,7 +1247,7 @@ final class VanillaBlockMappings{
 		//A
 		$reg->mapModel(Model::create(Blocks::ACTIVATOR_RAIL(), Ids::ACTIVATOR_RAIL)->properties([
 			new BoolProperty(StateNames::RAIL_DATA_BIT, fn(ActivatorRail $b) => $b->isPowered(), fn(ActivatorRail $b, bool $v) => $b->setPowered($v)),
-			new IntProperty(StateNames::RAIL_DIRECTION, 0, 5, fn(ActivatorRail $b) => $b->getShape(), fn(ActivatorRail $b, int $v) => $b->setShape($v))
+			$commonProperties->straightOnlyRailShape
 		]));
 
 		//B
@@ -1322,7 +1332,7 @@ final class VanillaBlockMappings{
 		$reg->mapModel(Model::create(Blocks::DEEPSLATE(), Ids::DEEPSLATE)->properties([$commonProperties->pillarAxis]));
 		$reg->mapModel(Model::create(Blocks::DETECTOR_RAIL(), Ids::DETECTOR_RAIL)->properties([
 			new BoolProperty(StateNames::RAIL_DATA_BIT, fn(DetectorRail $b) => $b->isActivated(), fn(DetectorRail $b, bool $v) => $b->setActivated($v)),
-			new IntProperty(StateNames::RAIL_DIRECTION, 0, 5, fn(StraightOnlyRail $b) => $b->getShape(), fn(StraightOnlyRail $b, int $v) => $b->setShape($v)) //TODO: shared with ActivatorRail
+			$commonProperties->straightOnlyRailShape
 		]));
 
 		//E
@@ -1332,7 +1342,7 @@ final class VanillaBlockMappings{
 			$commonProperties->horizontalFacingCardinal
 		]));
 		$reg->mapModel(Model::create(Blocks::END_ROD(), Ids::END_ROD)->properties([
-			new ValueFromIntProperty(StateNames::FACING_DIRECTION, ValueMappings::getInstance()->facingEndRod, fn(EndRod $b) => $b->getFacing(), fn(EndRod $b, int $v) => $b->setFacing($v)),
+			new ValueFromIntProperty(StateNames::FACING_DIRECTION, ValueMappings::getInstance()->facingEndRod, fn(EndRod $b) => $b->getFacing(), fn(EndRod $b, Facing $v) => $b->setFacing($v)),
 		]));
 
 		//F
@@ -1360,10 +1370,11 @@ final class VanillaBlockMappings{
 		$reg->mapModel(Model::create(Blocks::HOPPER(), Ids::HOPPER)->properties([
 			//kinda weird this doesn't use powered_bit?
 			new BoolProperty(StateNames::TOGGLE_BIT, fn(PoweredByRedstone $b) => $b->isPowered(), fn(PoweredByRedstone $b, bool $v) => $b->setPowered($v)),
-			new ValueFromIntProperty(StateNames::FACING_DIRECTION, ValueMappings::getInstance()->facingExceptUp, fn(Hopper $b) => $b->getFacing(), fn(Hopper $b, int $v) => $b->setFacing($v)),
+			new ValueFromIntProperty(StateNames::FACING_DIRECTION, ValueMappings::getInstance()->facingExceptUp, fn(Hopper $b) => $b->getFacing()->value, fn(Hopper $b, int $v) => $b->setFacing(Facing::from($v))),
 		]));
 
 		//I
+		$reg->mapModel(Model::create(Blocks::INFESTED_DEEPSLATE(), Ids::INFESTED_DEEPSLATE)->properties([$commonProperties->pillarAxis]));
 		$reg->mapModel(Model::create(Blocks::IRON_DOOR(), Ids::IRON_DOOR)->properties($commonProperties->doorProperties));
 		$reg->mapModel(Model::create(Blocks::IRON_TRAPDOOR(), Ids::IRON_TRAPDOOR)->properties($commonProperties->trapdoorProperties));
 		$reg->mapModel(Model::create(Blocks::ITEM_FRAME(), Ids::FRAME)->properties($commonProperties->itemFrameProperties));
@@ -1390,7 +1401,8 @@ final class VanillaBlockMappings{
 			new IntProperty(StateNames::AGE, 0, 3, fn(NetherWartPlant $b) => $b->getAge(), fn(NetherWartPlant $b, int $v) => $b->setAge($v))
 		]));
 		$reg->mapModel(Model::create(Blocks::NETHER_PORTAL(), Ids::PORTAL)->properties([
-			new ValueFromStringProperty(StateNames::PORTAL_AXIS, ValueMappings::getInstance()->portalAxis, fn(NetherPortal $b) => $b->getAxis(), fn(NetherPortal $b, int $v) => $b->setAxis($v))
+			//TODO: hack for lack of horizontal axis enum :(
+			new ValueFromStringProperty(StateNames::PORTAL_AXIS, ValueMappings::getInstance()->portalAxis, fn(NetherPortal $b) => $b->getAxis()->value, fn(NetherPortal $b, int $v) => $b->setAxis(Axis::from($v)))
 		]));
 
 		//P
@@ -1401,7 +1413,7 @@ final class VanillaBlockMappings{
 		]));
 		$reg->mapModel(Model::create(Blocks::POWERED_RAIL(), Ids::GOLDEN_RAIL)->properties([
 			new BoolProperty(StateNames::RAIL_DATA_BIT, fn(PoweredRail $b) => $b->isPowered(), fn(PoweredRail $b, bool $v) => $b->setPowered($v)), //TODO: shared with ActivatorRail
-			new IntProperty(StateNames::RAIL_DIRECTION, 0, 5, fn(StraightOnlyRail $b) => $b->getShape(), fn(StraightOnlyRail $b, int $v) => $b->setShape($v)) //TODO: shared with ActivatorRail
+			$commonProperties->straightOnlyRailShape
 		]));
 		$reg->mapModel(Model::create(Blocks::PITCHER_PLANT(), Ids::PITCHER_PLANT)->properties([
 			new BoolProperty(StateNames::UPPER_BLOCK_BIT, fn(DoublePlant $b) => $b->isTop(), fn(DoublePlant $b, bool $v) => $b->setTop($v)), //TODO: don't we have helpers for this?
@@ -1426,7 +1438,18 @@ final class VanillaBlockMappings{
 
 		//R
 		$reg->mapModel(Model::create(Blocks::RAIL(), Ids::RAIL)->properties([
-			new IntProperty(StateNames::RAIL_DIRECTION, 0, 9, fn(Rail $b) => $b->getShape(), fn(Rail $b, int $v) => $b->setShape($v))
+			new ValueFromIntProperty(StateNames::RAIL_DIRECTION, EnumFromRawStateMap::int(RailShape::class, fn(RailShape $case) => match($case){
+				RailShape::FLAT_AXIS_Z => BlockLegacyMetadata::RAIL_STRAIGHT_NORTH_SOUTH,
+				RailShape::FLAT_AXIS_X => BlockLegacyMetadata::RAIL_STRAIGHT_EAST_WEST,
+				RailShape::ASCENDING_EAST => BlockLegacyMetadata::RAIL_ASCENDING_EAST,
+				RailShape::ASCENDING_WEST => BlockLegacyMetadata::RAIL_ASCENDING_WEST,
+				RailShape::ASCENDING_NORTH => BlockLegacyMetadata::RAIL_ASCENDING_NORTH,
+				RailShape::ASCENDING_SOUTH => BlockLegacyMetadata::RAIL_ASCENDING_SOUTH,
+				RailShape::CURVED_NORTHEAST => BlockLegacyMetadata::RAIL_CURVE_NORTHEAST,
+				RailShape::CURVED_NORTHWEST => BlockLegacyMetadata::RAIL_CURVE_NORTHWEST,
+				RailShape::CURVED_SOUTHEAST => BlockLegacyMetadata::RAIL_CURVE_SOUTHEAST,
+				RailShape::CURVED_SOUTHWEST => BlockLegacyMetadata::RAIL_CURVE_SOUTHWEST,
+			}), fn(Rail $b) => $b->getShape(), fn(Rail $b, RailShape $v) => $b->setShape($v))
 		]));
 		$reg->mapModel(Model::create(Blocks::REDSTONE_WIRE(), Ids::REDSTONE_WIRE)->properties([$commonProperties->analogRedstoneSignal]));
 		$reg->mapModel(Model::create(Blocks::RESPAWN_ANCHOR(), Ids::RESPAWN_ANCHOR)->properties([

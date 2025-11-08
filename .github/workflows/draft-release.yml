@@ -18,7 +18,7 @@ on:
       - "*"
 
 env:
-  PHP_VERSION: "8.2"
+  PHP_VERSION: "8.3"
 
 jobs:
   skip:
@@ -155,7 +155,7 @@ jobs:
         run: php tools/generate-permission-doc.php rst
 
       - name: Upload release artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: release_artifacts
           path: |

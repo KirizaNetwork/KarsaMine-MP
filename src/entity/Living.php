@@ -152,7 +152,7 @@ abstract class Living extends Entity{
 		$this->effectManager->getEffectAddHooks()->add(function() : void{ $this->networkPropertiesDirty = true; });
 		$this->effectManager->getEffectRemoveHooks()->add(function() : void{ $this->networkPropertiesDirty = true; });
 
-		$this->armorInventory = new ArmorInventory($this);
+		$this->armorInventory = new ArmorInventory();
 		//TODO: load/save armor inventory contents
 		$this->armorInventory->getListeners()->add(CallbackInventoryListener::onAnyChange(fn() => NetworkBroadcastUtils::broadcastEntityEvent(
 			$this->getViewers(),
@@ -744,7 +744,7 @@ abstract class Living extends Entity{
 				if(
 					!$block->isSameState($liquid) ||
 					$world->getBlockAt($x, $y + 1, $z)->getTypeId() !== BlockTypeIds::AIR ||
-					count($world->getNearbyEntities(AxisAlignedBB::one()->offset($x, $y, $z))) !== 0
+					count($world->getNearbyEntities(AxisAlignedBB::one()->offsetCopy($x, $y, $z))) !== 0
 				){
 					continue;
 				}
@@ -995,7 +995,7 @@ abstract class Living extends Entity{
 	}
 
 	protected function onDispose() : void{
-		$this->armorInventory->removeAllViewers();
+		$this->armorInventory->removeAllWindows();
 		$this->effectManager->getEffectAddHooks()->clear();
 		$this->effectManager->getEffectRemoveHooks()->clear();
 		parent::onDispose();
@@ -1003,7 +1003,6 @@ abstract class Living extends Entity{
 
 	protected function destroyCycles() : void{
 		unset(
-			$this->armorInventory,
 			$this->effectManager
 		);
 		parent::destroyCycles();

@@ -27,6 +27,7 @@ use pocketmine\block\Block;
 use pocketmine\data\SavedDataLoadingException;
 use pocketmine\entity\Location;
 use pocketmine\entity\object\FireworkRocket as FireworkEntity;
+use pocketmine\math\Facing;
 use pocketmine\math\Vector3;
 use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\nbt\tag\ListTag;
@@ -92,7 +93,7 @@ class FireworkRocket extends Item{
 		return $this;
 	}
 
-	public function onInteractBlock(Player $player, Block $blockReplace, Block $blockClicked, int $face, Vector3 $clickVector, array &$returnedItems) : ItemUseResult{
+	public function onInteractBlock(Player $player, Block $blockReplace, Block $blockClicked, Facing $face, Vector3 $clickVector, array &$returnedItems) : ItemUseResult{
 		//TODO: this would be nicer if Vector3::getSide() accepted floats for distance
 		$position = $blockClicked->getPosition()->addVector($clickVector)->addVector(Vector3::zero()->getSide($face)->multiply(0.15));
 

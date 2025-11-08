@@ -349,11 +349,16 @@ final class ItemTypeIds{
 	public const TRIDENT = 20310;
 	public const FIREWORK_ROCKET = 20311;
 	public const FIREWORK_STAR = 20312;
-	public const CROSSBOW = 20313;
-	public const ELYTRA = 20314;
-	public const SHIELD = 20315;
+	public const COPPER_BOOTS = 20313;
+	public const COPPER_CHESTPLATE = 20314;
+	public const COPPER_HELMET = 20315;
+	public const COPPER_LEGGINGS = 20316;
+	public const COPPER_NUGGET = 20317;
+	public const CROSSBOW = 20318;
+	public const ELYTRA = 20319;
+	public const SHIELD = 20320;
 
-	public const FIRST_UNUSED_ITEM_ID = 20316;
+	public const FIRST_UNUSED_ITEM_ID = 20321;
 
 	private static int $nextDynamicId = self::FIRST_UNUSED_ITEM_ID;
 

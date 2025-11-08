@@ -27,6 +27,7 @@ use pocketmine\lang\Translatable;
 use pocketmine\utils\Utils;
 
 /**
+ * @deprecated
  * @phpstan-type Execute \Closure(CommandSender $sender, Command $command, string $commandLabel, list<string> $args) : mixed
  */
 final class ClosureCommand extends Command{
@@ -38,19 +39,19 @@ final class ClosureCommand extends Command{
 	 * @phpstan-param Execute $execute
 	 */
 	public function __construct(
+		string $namespace,
 		string $name,
 		\Closure $execute,
 		array $permissions,
 		Translatable|string $description = "",
 		Translatable|string|null $usageMessage = null,
-		array $aliases = []
 	){
 		Utils::validateCallableSignature(
 			fn(CommandSender $sender, Command $command, string $commandLabel, array $args) : mixed => 1,
 			$execute,
 		);
 		$this->execute = $execute;
-		parent::__construct($name, $description, $usageMessage, $aliases);
+		parent::__construct($namespace, $name, $description, $usageMessage);
 		$this->setPermissions($permissions);
 	}
 

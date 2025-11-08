@@ -81,6 +81,7 @@ use pocketmine\player\PlayerDataLoadException;
 use pocketmine\player\PlayerDataProvider;
 use pocketmine\player\PlayerDataSaveException;
 use pocketmine\player\PlayerInfo;
+use pocketmine\plugin\FolderPluginLoader;
 use pocketmine\plugin\PharPluginLoader;
 use pocketmine\plugin\PluginEnableOrder;
 use pocketmine\plugin\PluginGraylist;
@@ -357,6 +358,10 @@ class Server{
 
 	public function getMaxPlayers() : int{
 		return $this->maxPlayers;
+	}
+
+	public function setMaxPlayers(int $maxPlayers) : void{
+		$this->maxPlayers = $maxPlayers;
 	}
 
 	/**
@@ -719,11 +724,8 @@ class Server{
 	 * @phpstan-return (Command&PluginOwned)|null
 	 */
 	public function getPluginCommand(string $name){
-		if(($command = $this->commandMap->getCommand($name)) instanceof PluginOwned){
-			return $command;
-		}else{
-			return null;
-		}
+		$command = $this->commandMap->getCommand($name);
+		return $command instanceof PluginOwned ? $command : null;
 	}
 
 	public function getNameBans() : BanList{
@@ -1077,6 +1079,7 @@ class Server{
 			$this->pluginManager = new PluginManager($this, $this->configGroup->getPropertyBool(Yml::PLUGINS_LEGACY_DATA_DIR, true) ? null : Path::join($this->dataPath, "plugin_data"), $pluginGraylist);
 			$this->pluginManager->registerInterface(new PharPluginLoader($this->autoloader));
 			$this->pluginManager->registerInterface(new ScriptPluginLoader());
+			$this->pluginManager->registerInterface(new FolderPluginLoader($this->autoloader));
 
 			$providerManager = new WorldProviderManager();
 			if(
@@ -1544,6 +1547,16 @@ class Server{
 		if($this->isRunning){
 			$this->isRunning = false;
 			$this->signalHandler->unregister();
+
+			if(TimingsHandler::isEnabled()){
+				TimingsHandler::createReportFile(Path::join($this->getDataPath(), "timings"))->onCompletion(
+					function(string $timingsFile) : void{
+						$this->logger->info($this->language->translate(KnownTranslationFactory::pocketmine_command_timings_timingsWrite($timingsFile)));
+						TimingsHandler::setEnabled(false);
+					},
+					fn() => $this->logger->error("Failed to create timings report file")
+				);
+			}
 		}
 	}
 

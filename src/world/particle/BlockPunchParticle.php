@@ -24,6 +24,7 @@ declare(strict_types=1);
 namespace pocketmine\world\particle;
 
 use pocketmine\block\Block;
+use pocketmine\math\Facing;
 use pocketmine\math\Vector3;
 use pocketmine\network\mcpe\protocol\LevelEventPacket;
 use pocketmine\network\mcpe\protocol\types\LevelEvent;
@@ -33,13 +34,17 @@ use pocketmine\network\mcpe\protocol\types\LevelEvent;
  */
 class BlockPunchParticle extends BlockParticle{
 	public function __construct(
-		Block $block,
-		private int $face
+		private Block $block,
+		private Facing $face
 	){
 		parent::__construct($block);
 	}
 
 	public function encode(Vector3 $pos) : array{
-		return [LevelEventPacket::create(LevelEvent::PARTICLE_PUNCH_BLOCK, $this->toRuntimeId() | ($this->face << 24), $pos)];
+		return [LevelEventPacket::create(
+			LevelEvent::PARTICLE_PUNCH_BLOCK,
+			//TODO: dodgy use of internal value for protocol - this should be properly translated
+			$this->toRuntimeId() | ($this->face->value << 24), $pos)
+		];
 	}
 }

@@ -23,30 +23,16 @@ declare(strict_types=1);
 
 namespace pocketmine\world\generator\object;
 
-use pocketmine\utils\LegacyEnumShimTrait;
-
-/**
- * TODO: These tags need to be removed once we get rid of LegacyEnumShimTrait (PM6)
- *  These are retained for backwards compatibility only.
- *
- * @method static TreeType ACACIA()
- * @method static TreeType BIRCH()
- * @method static TreeType DARK_OAK()
- * @method static TreeType JUNGLE()
- * @method static TreeType OAK()
- * @method static TreeType SPRUCE()
- */
 enum TreeType{
-	use LegacyEnumShimTrait;
-
 	case OAK;
 	case SPRUCE;
 	case BIRCH;
 	case JUNGLE;
 	case ACACIA;
 	case DARK_OAK;
+	case CRIMSON;
+	case WARPED;
 	//TODO: cherry blossom, mangrove, azalea
-	//TODO: do crimson and warped "trees" belong here? I'm not sure if they're actually trees or just fungi
 	//TODO: perhaps huge mushrooms should be here too???
 
 	public function getDisplayName() : string{
@@ -57,6 +43,8 @@ enum TreeType{
 			self::JUNGLE => "Jungle",
 			self::ACACIA => "Acacia",
 			self::DARK_OAK => "Dark Oak",
+			self::CRIMSON => "Crimson",
+			self::WARPED => "Warped",
 		};
 	}
 }

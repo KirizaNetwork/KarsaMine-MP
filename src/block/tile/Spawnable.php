@@ -30,27 +30,12 @@ use pocketmine\nbt\tag\IntTag;
 use pocketmine\nbt\tag\StringTag;
 use pocketmine\network\mcpe\convert\TypeConverter;
 use pocketmine\network\mcpe\protocol\types\CacheableNbt;
-use function count;
 use function get_class;
 use function spl_object_id;
 
 abstract class Spawnable extends Tile{
 	/** @phpstan-var array<int, CacheableNbt<CompoundTag>|null> */
 	private array $spawnCompoundCaches = [];
-
-	/**
-	 * @deprecated
-	 */
-	public function isDirty() : bool{
-		return count($this->spawnCompoundCaches) === 0;
-	}
-
-	/**
-	 * @deprecated
-	 */
-	public function setDirty(bool $dirty = true) : void{
-		$this->clearSpawnCompoundCache();
-	}
 
 	public function clearSpawnCompoundCache() : void{
 		$this->spawnCompoundCaches = [];
