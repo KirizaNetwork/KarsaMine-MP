@@ -25,7 +25,7 @@ namespace pocketmine\command\defaults;
 
 use pocketmine\command\Command;
 use pocketmine\command\CommandSender;
-use pocketmine\command\overload\ExecutorOverload;
+use pocketmine\command\overload\OverloadBuilder;
 use pocketmine\lang\KnownTranslationFactory;
 use pocketmine\permission\DefaultPermissionNames;
 use pocketmine\utils\Process;
@@ -45,7 +45,7 @@ final class StatusCommand{
 		return new Command(
 			$namespace,
 			$name,
-			new ExecutorOverload([], DefaultPermissionNames::COMMAND_STATUS, self::execute(...)),
+			OverloadBuilder::single([], DefaultPermissionNames::COMMAND_STATUS, self::execute(...)),
 			KnownTranslationFactory::pocketmine_command_status_description()
 		);
 	}

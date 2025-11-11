@@ -25,8 +25,8 @@ namespace pocketmine\command\defaults;
 
 use pocketmine\command\Command;
 use pocketmine\command\CommandSender;
-use pocketmine\command\overload\BranchingOverloadBuilder;
 use pocketmine\command\overload\IntRangeParameter;
+use pocketmine\command\overload\OverloadBuilder;
 use pocketmine\command\overload\RawParameter;
 use pocketmine\command\overload\StringParameter;
 use pocketmine\lang\KnownTranslationFactory;
@@ -51,7 +51,7 @@ final class TitleCommand{
 		return new Command(
 			$namespace,
 			$name,
-			BranchingOverloadBuilder::make(commonParameters: [$playerParameter])
+			OverloadBuilder::make(commonParameters: [$playerParameter])
 				->executor(["clear"], self::OVERLOAD_PERMS, self::clearTitles(...))
 				->executor(["reset"], self::OVERLOAD_PERMS, self::resetTitles(...))
 				->executor(["title", $textParameter], self::OVERLOAD_PERMS, self::sendTitle(...))

@@ -32,6 +32,9 @@ use function ksort;
 use function strlen;
 use const SORT_NATURAL;
 
+/**
+ * @internal Do not construct this class directly. Use {@link OverloadBuilder instead}.
+ */
 final class BranchingOverload implements Overload{
 
 	/**

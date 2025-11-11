@@ -25,7 +25,7 @@ namespace pocketmine\command\defaults;
 
 use pocketmine\command\Command;
 use pocketmine\command\CommandSender;
-use pocketmine\command\overload\BranchingOverloadBuilder;
+use pocketmine\command\overload\OverloadBuilder;
 use pocketmine\lang\KnownTranslationFactory;
 use pocketmine\permission\DefaultPermissionNames;
 use pocketmine\player\Player;
@@ -58,7 +58,7 @@ final class TimingsCommand{
 		return new Command(
 			$namespace,
 			$name,
-			BranchingOverloadBuilder::make()
+			OverloadBuilder::make()
 				->executor(["on"], DefaultPermissionNames::COMMAND_TIMINGS, self::enableTimings(...))
 				->executor(["off"], DefaultPermissionNames::COMMAND_TIMINGS, self::disableTimings(...))
 				->executor(["reset"], DefaultPermissionNames::COMMAND_TIMINGS, self::resetTimings(...))

@@ -25,7 +25,7 @@ namespace pocketmine\command\defaults;
 
 use pocketmine\command\Command;
 use pocketmine\command\CommandSender;
-use pocketmine\command\overload\ExecutorOverload;
+use pocketmine\command\overload\OverloadBuilder;
 use pocketmine\command\overload\StringParameter;
 use pocketmine\lang\KnownTranslationFactory;
 use pocketmine\permission\DefaultPermissionNames;
@@ -40,7 +40,7 @@ final class PardonIpCommand{
 		return new Command(
 			$namespace,
 			$name,
-			new ExecutorOverload(
+			OverloadBuilder::single(
 				[new StringParameter("ip", "IP address")],
 				DefaultPermissionNames::COMMAND_UNBAN_IP,
 				self::execute(...)

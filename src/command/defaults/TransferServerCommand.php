@@ -25,8 +25,8 @@ namespace pocketmine\command\defaults;
 
 use pocketmine\command\Command;
 use pocketmine\command\CommandSender;
-use pocketmine\command\overload\ExecutorOverload;
 use pocketmine\command\overload\IntRangeParameter;
+use pocketmine\command\overload\OverloadBuilder;
 use pocketmine\command\overload\StringParameter;
 use pocketmine\lang\KnownTranslationFactory;
 use pocketmine\permission\DefaultPermissionNames;
@@ -42,7 +42,7 @@ final class TransferServerCommand{
 		return new Command(
 			$namespace,
 			$name,
-			new ExecutorOverload([
+			OverloadBuilder::single([
 				new StringParameter("serverAddress", "server address"),
 				new IntRangeParameter("serverPort", "server port", 1, 65535)
 			], DefaultPermissionNames::COMMAND_TRANSFERSERVER, self::execute(...)),

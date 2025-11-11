@@ -25,7 +25,7 @@ namespace pocketmine\command\defaults;
 
 use pocketmine\command\Command;
 use pocketmine\command\CommandSender;
-use pocketmine\command\overload\BranchingOverloadBuilder;
+use pocketmine\command\overload\OverloadBuilder;
 use pocketmine\command\overload\RelativeXYZ;
 use pocketmine\command\overload\RelativeXYZParameter;
 use pocketmine\command\overload\StringParameter;
@@ -50,7 +50,7 @@ final class SpawnpointCommand{
 		return new Command(
 			$namespace,
 			$name,
-			BranchingOverloadBuilder::make(commonParameters: [
+			OverloadBuilder::make(commonParameters: [
 				new StringParameter("target", "target")
 			])
 				->executor([], self::OVERLOAD_PERMS, self::setSpawnHere(...))

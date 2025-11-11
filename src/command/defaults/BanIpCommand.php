@@ -25,7 +25,7 @@ namespace pocketmine\command\defaults;
 
 use pocketmine\command\Command;
 use pocketmine\command\CommandSender;
-use pocketmine\command\overload\ExecutorOverload;
+use pocketmine\command\overload\OverloadBuilder;
 use pocketmine\command\overload\RawParameter;
 use pocketmine\command\overload\StringParameter;
 use pocketmine\lang\KnownTranslationFactory;
@@ -42,7 +42,7 @@ final class BanIpCommand{
 		return new Command(
 			$namespace,
 			$name,
-			new ExecutorOverload(
+			OverloadBuilder::single(
 				[
 					//TODO: maybe split this into two overloads?
 					new StringParameter("target", "name or IP address"),

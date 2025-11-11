@@ -25,8 +25,7 @@ namespace pocketmine\command\defaults;
 
 use pocketmine\command\Command;
 use pocketmine\command\CommandSender;
-use pocketmine\command\overload\BranchingOverload;
-use pocketmine\command\overload\BranchingOverloadBuilder;
+use pocketmine\command\overload\OverloadBuilder;
 use pocketmine\command\overload\StringParameter;
 use pocketmine\lang\KnownTranslationFactory;
 use pocketmine\lang\Translatable;
@@ -49,12 +48,12 @@ final class CommandAliasCommand{
 	}
 
 	public static function create(string $namespace, string $name) : Command{
-		$builder = BranchingOverloadBuilder::make();
+		$builder = OverloadBuilder::make();
 		foreach([false, true] as $global){
 			$prefix = $global ? ["global"] : [];
 			$editPerm = $global ? self::GLOBAL_PERM : self::SELF_PERM;
-			$builder->branch($prefix, function(BranchingOverloadBuilder $childBuilder) use ($global, $editPerm) : BranchingOverload{
-				$childBuilder->executor(
+			$builder->branch($prefix, fn(OverloadBuilder $childBuilder) => $childBuilder
+				->executor(
 					[
 						"create",
 						new StringParameter("alias", "alias"),
@@ -62,22 +61,21 @@ final class CommandAliasCommand{
 					],
 					$editPerm,
 					fn(CommandSender $sender, string $alias, string $target) => self::createAlias($sender, $alias, $target, $global)
-				);
-				$childBuilder->executor(
+				)
+				->executor(
 					[
 						"delete",
 						new StringParameter("alias", "alias")
 					],
 					$editPerm,
 					fn(CommandSender $sender, string $alias) => self::deleteAlias($sender, $alias, $global)
-				);
-				$childBuilder->executor(
+				)
+				->executor(
 					["list"],
 					self::LIST_PERM,
 					fn(CommandSender $sender) => self::listAliases($sender, $global)
-				);
-				return $childBuilder->build();
-			});
+				)
+			);
 		}
 		return new Command(
 			$namespace,

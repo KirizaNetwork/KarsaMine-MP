@@ -25,7 +25,7 @@ namespace pocketmine\command\defaults;
 
 use pocketmine\command\Command;
 use pocketmine\command\CommandSender;
-use pocketmine\command\overload\BranchingOverloadBuilder;
+use pocketmine\command\overload\OverloadBuilder;
 use pocketmine\command\overload\RelativeXYZ;
 use pocketmine\command\overload\RelativeXYZParameter;
 use pocketmine\lang\KnownTranslationFactory;
@@ -43,7 +43,7 @@ final class SetWorldSpawnCommand{
 		return new Command(
 			$namespace,
 			$name,
-			BranchingOverloadBuilder::make()
+			OverloadBuilder::make()
 				->executor([], DefaultPermissionNames::COMMAND_SETWORLDSPAWN, self::setSpawnHere(...))
 				->executor([
 					new RelativeXYZParameter("coordinates", "coordinates"),

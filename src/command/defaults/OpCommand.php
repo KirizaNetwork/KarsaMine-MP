@@ -25,7 +25,7 @@ namespace pocketmine\command\defaults;
 
 use pocketmine\command\Command;
 use pocketmine\command\CommandSender;
-use pocketmine\command\overload\ExecutorOverload;
+use pocketmine\command\overload\OverloadBuilder;
 use pocketmine\command\overload\StringParameter;
 use pocketmine\command\utils\InvalidCommandSyntaxException;
 use pocketmine\lang\KnownTranslationFactory;
@@ -42,7 +42,7 @@ final class OpCommand{
 		return new Command(
 			$namespace,
 			$name,
-			new ExecutorOverload(
+			OverloadBuilder::single(
 				[new StringParameter("playerName", "player name")],
 				DefaultPermissionNames::COMMAND_OP_GIVE,
 				self::execute(...)

@@ -42,6 +42,9 @@ use function strlen;
 use function trigger_error;
 use const E_USER_DEPRECATED;
 
+/**
+ * @internal Do not construct this class directly. Use {@link OverloadBuilder instead}.
+ */
 final class ExecutorOverload implements Overload{
 
 	private int $requiredInputCount;

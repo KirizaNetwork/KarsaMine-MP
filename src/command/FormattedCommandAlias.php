@@ -23,7 +23,7 @@ declare(strict_types=1);
 
 namespace pocketmine\command;
 
-use pocketmine\command\overload\ExecutorOverload;
+use pocketmine\command\overload\OverloadBuilder;
 use pocketmine\command\overload\RawParameter;
 use pocketmine\command\utils\CommandStringHelper;
 use pocketmine\utils\TextFormat;
@@ -67,7 +67,7 @@ final class FormattedCommandAlias{
 		return new Command(
 			$namespace,
 			$name,
-			new ExecutorOverload(
+			OverloadBuilder::single(
 				[new RawParameter("args", "args")],
 				$permission,
 				fn(CommandSender $sender, string $args) => self::execute($sender, CommandStringHelper::parseQuoteAware($args), $formatStrings)

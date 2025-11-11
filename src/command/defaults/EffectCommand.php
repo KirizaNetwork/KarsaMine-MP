@@ -26,10 +26,9 @@ namespace pocketmine\command\defaults;
 use pocketmine\command\Command;
 use pocketmine\command\CommandSender;
 use pocketmine\command\overload\BoolParameter;
-use pocketmine\command\overload\BranchingOverload;
-use pocketmine\command\overload\BranchingOverloadBuilder;
 use pocketmine\command\overload\IntRangeParameter;
 use pocketmine\command\overload\MappedParameter;
+use pocketmine\command\overload\OverloadBuilder;
 use pocketmine\command\overload\ParameterParseException;
 use pocketmine\command\overload\StringParameter;
 use pocketmine\entity\effect\Effect;
@@ -55,7 +54,7 @@ final class EffectCommand{
 		return new Command(
 			$namespace,
 			$name,
-			BranchingOverloadBuilder::make(commonParameters: [
+			OverloadBuilder::make(commonParameters: [
 				new StringParameter("target", "target")
 			])
 				->executor(
@@ -70,11 +69,11 @@ final class EffectCommand{
 						StringToEffectParser::getInstance()->parse($v) ??
 						throw new ParameterParseException("Invalid effect name")
 					)
-				], function(BranchingOverloadBuilder $builder) : BranchingOverload{
+				], function(OverloadBuilder $builder) : void{
 					$amplifierParameter = new IntRangeParameter("amplifier", "amplifier", 0, 255);
 					$bubblesParameter = new BoolParameter("bubbles", "bubbles");
 					//TODO: would be nice if we could union this somehow?
-					return $builder
+					$builder
 						->executor([
 							new IntRangeParameter("duration", "duration", 0, (int) (Limits::INT32_MAX / 20)),
 							$amplifierParameter,
@@ -87,8 +86,7 @@ final class EffectCommand{
 							"infinite",
 							$amplifierParameter,
 							$bubblesParameter
-						], self::OVERLOAD_PERMS, self::modifyEffectInfinite(...))
-						->build();
+						], self::OVERLOAD_PERMS, self::modifyEffectInfinite(...));
 				}
 				)
 				->build(),

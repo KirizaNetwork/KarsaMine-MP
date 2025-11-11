@@ -25,7 +25,7 @@ namespace pocketmine\command\defaults;
 
 use pocketmine\command\Command;
 use pocketmine\command\CommandSender;
-use pocketmine\command\overload\BranchingOverloadBuilder;
+use pocketmine\command\overload\OverloadBuilder;
 use pocketmine\command\overload\StringParameter;
 use pocketmine\command\utils\InvalidCommandSyntaxException;
 use pocketmine\lang\KnownTranslationFactory;
@@ -47,7 +47,7 @@ final class WhitelistCommand{
 		return new Command(
 			$namespace,
 			$name,
-			BranchingOverloadBuilder::make()
+			OverloadBuilder::make()
 				->executor(["reload"], DefaultPermissionNames::COMMAND_WHITELIST_RELOAD, self::reloadWhitelist(...))
 				->executor(["enable"], DefaultPermissionNames::COMMAND_WHITELIST_ENABLE, self::enableWhitelist(...))
 				->executor(["disable"], DefaultPermissionNames::COMMAND_WHITELIST_DISABLE, self::disableWhitelist(...))

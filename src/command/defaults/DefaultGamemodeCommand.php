@@ -25,8 +25,8 @@ namespace pocketmine\command\defaults;
 
 use pocketmine\command\Command;
 use pocketmine\command\CommandSender;
-use pocketmine\command\overload\ExecutorOverload;
 use pocketmine\command\overload\MappedParameter;
+use pocketmine\command\overload\OverloadBuilder;
 use pocketmine\command\overload\ParameterParseException;
 use pocketmine\lang\KnownTranslationFactory;
 use pocketmine\permission\DefaultPermissionNames;
@@ -43,7 +43,7 @@ final class DefaultGamemodeCommand{
 		return new Command(
 			$namespace,
 			$name,
-			new ExecutorOverload([
+			OverloadBuilder::single([
 				new MappedParameter(
 					"gameMode",
 					"game mode",

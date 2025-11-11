@@ -25,7 +25,7 @@ namespace pocketmine\command\defaults;
 
 use pocketmine\command\Command;
 use pocketmine\command\CommandSender;
-use pocketmine\command\overload\BranchingOverloadBuilder;
+use pocketmine\command\overload\OverloadBuilder;
 use pocketmine\command\overload\StringParameter;
 use pocketmine\lang\KnownTranslationFactory;
 use pocketmine\network\mcpe\protocol\ProtocolInfo;
@@ -50,7 +50,7 @@ final class VersionCommand{
 		return new Command(
 			$namespace,
 			$name,
-			BranchingOverloadBuilder::make()
+			OverloadBuilder::make()
 				//technically this could be one overload, but two lets us do two separate handlers
 				->executor([], DefaultPermissionNames::COMMAND_VERSION, self::showServerVersion(...))
 				->executor([

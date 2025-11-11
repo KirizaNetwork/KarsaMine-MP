@@ -25,7 +25,7 @@ namespace pocketmine\command\defaults;
 
 use pocketmine\command\Command;
 use pocketmine\command\CommandSender;
-use pocketmine\command\overload\ExecutorOverload;
+use pocketmine\command\overload\OverloadBuilder;
 use pocketmine\lang\KnownTranslationFactory;
 use pocketmine\permission\DefaultPermissionNames;
 use pocketmine\player\Player;
@@ -39,7 +39,7 @@ final class SeedCommand{
 		return new Command(
 			$namespace,
 			$name,
-			new ExecutorOverload([], DefaultPermissionNames::COMMAND_SEED, self::execute(...)),
+			OverloadBuilder::single([], DefaultPermissionNames::COMMAND_SEED, self::execute(...)),
 			KnownTranslationFactory::pocketmine_command_seed_description()
 		);
 	}

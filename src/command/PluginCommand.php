@@ -23,7 +23,7 @@ declare(strict_types=1);
 
 namespace pocketmine\command;
 
-use pocketmine\command\overload\ExecutorOverload;
+use pocketmine\command\overload\OverloadBuilder;
 use pocketmine\command\overload\RawParameter;
 use pocketmine\command\utils\CommandStringHelper;
 use pocketmine\command\utils\InvalidCommandSyntaxException;
@@ -49,7 +49,7 @@ final class PluginCommand extends Command implements PluginOwned{
 		parent::__construct(
 			$namespace,
 			$name,
-			new ExecutorOverload(
+			OverloadBuilder::single(
 				[new RawParameter("args", "args")],
 				$permission,
 				fn(CommandSender $sender, string $aliasUsed, string $args) => $this->execute($sender, $aliasUsed, CommandStringHelper::parseQuoteAware($args)),

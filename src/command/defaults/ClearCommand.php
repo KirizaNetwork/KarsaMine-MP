@@ -25,9 +25,9 @@ namespace pocketmine\command\defaults;
 
 use pocketmine\command\Command;
 use pocketmine\command\CommandSender;
-use pocketmine\command\overload\ExecutorOverload;
 use pocketmine\command\overload\IntRangeParameter;
 use pocketmine\command\overload\MappedParameter;
+use pocketmine\command\overload\OverloadBuilder;
 use pocketmine\command\overload\ParameterParseException;
 use pocketmine\command\overload\StringParameter;
 use pocketmine\inventory\Inventory;
@@ -56,7 +56,7 @@ final class ClearCommand{
 		return new Command(
 			$namespace,
 			$name,
-			new ExecutorOverload([
+			OverloadBuilder::single([
 				new StringParameter("playerName", "player name"),
 				new MappedParameter("targetItem", "item name", static function(string $v) : Item{
 					try{

@@ -25,10 +25,10 @@ namespace pocketmine\command\defaults;
 
 use pocketmine\command\Command;
 use pocketmine\command\CommandSender;
-use pocketmine\command\overload\BranchingOverload;
-use pocketmine\command\overload\BranchingOverloadBuilder;
 use pocketmine\command\overload\IntRangeParameter;
 use pocketmine\command\overload\MappedParameter;
+use pocketmine\command\overload\Overload;
+use pocketmine\command\overload\OverloadBuilder;
 use pocketmine\command\overload\ParameterParseException;
 use pocketmine\lang\KnownTranslationFactory;
 use pocketmine\permission\DefaultPermissionNames;
@@ -45,7 +45,7 @@ final class TimeCommand{
 		return new Command(
 			$namespace,
 			$name,
-			BranchingOverloadBuilder::make()
+			OverloadBuilder::make()
 				->executor(["start"], DefaultPermissionNames::COMMAND_TIME_START, self::startTime(...))
 				->executor(["stop"], DefaultPermissionNames::COMMAND_TIME_STOP, self::stopTime(...))
 				->executor(["query"], DefaultPermissionNames::COMMAND_TIME_QUERY, self::queryTime(...))
@@ -53,7 +53,7 @@ final class TimeCommand{
 					"add",
 					new IntRangeParameter("ticks", "ticks", 0, Limits::INT32_MAX),
 				], DefaultPermissionNames::COMMAND_TIME_ADD, self::addTime(...))
-				->branch(["set"], fn(BranchingOverloadBuilder $builder) : BranchingOverload => $builder
+				->branch(["set"], fn(OverloadBuilder $builder) => $builder
 					->executor([
 						new MappedParameter("time", "time name", static fn(string $v) : int => match ($v) {
 							"day" => World::TIME_DAY,
@@ -69,7 +69,7 @@ final class TimeCommand{
 					->executor([
 						new IntRangeParameter("time", "timestamp", 0, Limits::INT32_MAX)
 					], DefaultPermissionNames::COMMAND_TIME_SET, self::setTime(...))
-					->build())
+				)
 				->build(),
 			KnownTranslationFactory::pocketmine_command_time_description()
 		);

@@ -25,9 +25,8 @@ namespace pocketmine\command\defaults;
 
 use pocketmine\command\Command;
 use pocketmine\command\CommandSender;
-use pocketmine\command\overload\BranchingOverload;
-use pocketmine\command\overload\BranchingOverloadBuilder;
 use pocketmine\command\overload\FloatRangeParameter;
+use pocketmine\command\overload\OverloadBuilder;
 use pocketmine\command\overload\RelativeXYZ;
 use pocketmine\command\overload\RelativeXYZParameter;
 use pocketmine\command\overload\StringParameter;
@@ -48,10 +47,10 @@ final class TeleportCommand{
 		return new Command(
 			$namespace,
 			$name,
-			BranchingOverloadBuilder::make()
+			OverloadBuilder::make()
 				->branch(
 					[new StringParameter("teleportedPlayerName", "player to teleport")],
-					fn(BranchingOverloadBuilder $childBuilder) : BranchingOverload => self::buildOverloads(
+					fn(OverloadBuilder $childBuilder) => self::buildOverloads(
 						$childBuilder,
 						DefaultPermissionNames::COMMAND_TELEPORT_OTHER,
 						self::tpOtherToPlayer(...),
@@ -60,7 +59,7 @@ final class TeleportCommand{
 				)
 				->branch(
 					[],
-					fn(BranchingOverloadBuilder $childBuilder) : BranchingOverload => self::buildOverloads(
+					fn(OverloadBuilder $childBuilder) => self::buildOverloads(
 						$childBuilder,
 						DefaultPermissionNames::COMMAND_TELEPORT_SELF,
 						self::tpSelfToPlayer(...),
@@ -76,8 +75,8 @@ final class TeleportCommand{
 	 * @phpstan-param anyClosure $tpToPlayer
 	 * @phpstan-param anyClosure $tpToCoords
 	 */
-	private static function buildOverloads(BranchingOverloadBuilder $childBuilder, string $permission, \Closure $tpToPlayer, \Closure $tpToCoords) : BranchingOverload{
-		return $childBuilder
+	private static function buildOverloads(OverloadBuilder $childBuilder, string $permission, \Closure $tpToPlayer, \Closure $tpToCoords) : void{
+		$childBuilder
 			->executor([
 				new StringParameter("destinationPlayerName", "destination player")
 			], $permission, $tpToPlayer)
@@ -85,8 +84,7 @@ final class TeleportCommand{
 				new RelativeXYZParameter("coordinates", "coordinates"),
 				new FloatRangeParameter("yaw", "yaw", 0, 360),
 				new FloatRangeParameter("pitch", "pitch", -90, 90)
-			], $permission, $tpToCoords)
-			->build();
+			], $permission, $tpToCoords);
 	}
 
 	private static function tpCoords(

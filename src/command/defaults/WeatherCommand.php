@@ -25,8 +25,8 @@ namespace pocketmine\command\defaults;
 
 use pocketmine\command\Command;
 use pocketmine\command\CommandSender;
-use pocketmine\command\overload\BranchingOverloadBuilder;
 use pocketmine\command\overload\IntRangeParameter;
+use pocketmine\command\overload\OverloadBuilder;
 use pocketmine\lang\KnownTranslationFactory;
 use pocketmine\permission\DefaultPermissionNames;
 use pocketmine\player\Player;
@@ -46,7 +46,7 @@ final class WeatherCommand{
 		return new Command(
 			$namespace,
 			$name,
-			BranchingOverloadBuilder::make()
+			OverloadBuilder::make()
 				->executor([], DefaultPermissionNames::COMMAND_WEATHER, self::getWeather(...))
 				->executor(["clear", $durationParameter], DefaultPermissionNames::COMMAND_WEATHER, self::clearWeather(...))
 				->executor(["rain", $durationParameter], DefaultPermissionNames::COMMAND_WEATHER, self::rainWeather(...))

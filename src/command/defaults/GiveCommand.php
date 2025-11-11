@@ -25,8 +25,8 @@ namespace pocketmine\command\defaults;
 
 use pocketmine\command\Command;
 use pocketmine\command\CommandSender;
-use pocketmine\command\overload\ExecutorOverload;
 use pocketmine\command\overload\IntRangeParameter;
+use pocketmine\command\overload\OverloadBuilder;
 use pocketmine\command\overload\ParameterParseException;
 use pocketmine\command\overload\RawParameter;
 use pocketmine\command\overload\StringParameter;
@@ -54,7 +54,7 @@ final class GiveCommand{
 		return new Command(
 			$namespace,
 			$name,
-			new ExecutorOverload([
+			OverloadBuilder::single([
 				new StringParameter("target", "target"),
 				new StringParameter("itemName", "item"),
 				new IntRangeParameter("count", "count", 1, 32767),
