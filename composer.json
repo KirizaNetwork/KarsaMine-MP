@@ -95,6 +95,14 @@
          "@php build/generate-known-translation-apis.php",
          "@php build/generate-pocketmine-yml-property-consts.php",
          "@php build/generate-registry-annotations.php src"
+      ],
+      "run-check": [
+         "@composer install --prefer-dist --no-interaction",
+         "vendor/bin/phpstan analyze --no-progress --memory-limit=2G",
+         "vendor/bin/phpunit --bootstrap vendor/autoload.php --fail-on-warning tests/phpunit",
+         "@composer update-codegen",
+         "php php-cs-fixer.phar fix",
+         "php .github/workflows/verify-translations.php ./resources/translations"
       ]
    },
    "repositories": [
