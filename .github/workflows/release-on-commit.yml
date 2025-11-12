@@ -1,0 +1,119 @@
+name: Release PHAR from [Release] commit
+
+on:
+  push:
+    branches:
+      - '**'
+
+permissions:
+  contents: write
+
+env:
+  PHP_VERSION: "8.3"
+
+jobs:
+  build_and_release:
+    name: Build PHAR and create Release
+    if: ${{ github.event.head_commit != null && startsWith(github.event.head_commit.message, '[Release]') }}
+    runs-on: ubuntu-22.04
+
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          persist-credentials: true
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@2.35.5
+        with:
+          php-version: ${{ env.PHP_VERSION }}
+
+      - name: Restore Composer package cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cache/composer/files
+            ~/.cache/composer/vcs
+          key: "composer-v2-cache-${{ hashFiles('./composer.lock') }}"
+          restore-keys: |
+            composer-v2-cache-
+
+      - name: Install Composer dependencies
+        run: composer install --no-dev --prefer-dist --no-interaction --ignore-platform-reqs
+
+      - name: Minify BedrockData JSON files
+        run: php vendor/pocketmine/bedrock-data/.minify_json.php
+
+      - name: Build PocketMine-MP.phar
+        run: php -dphar.readonly=0 build/server-phar.php --git ${{ github.sha }}
+
+      - name: Get PocketMine-MP release version
+        id: get-pm-version
+        run: |
+          echo MCPE_VERSION=$(php build/dump-version-info.php mcpe_version) >> $GITHUB_OUTPUT
+          echo PRERELEASE=$(php build/dump-version-info.php prerelease) >> $GITHUB_OUTPUT
+
+      - name: Determine release name and tag
+        id: determine-release
+        run: |
+          set -euo pipefail
+
+          msg="${{ github.event.head_commit.message }}"
+          echo "Commit message: $msg"
+
+          release=$(echo "$msg" | sed -n 's/^\[Release\][[:space:]]*\(.*\)/\1/p')
+
+          if [ -z "$release" ]; then
+            echo "Error: commit message must include release name after '[Release]'. Example: '[Release] 1.21.120-r1'"
+            exit 1
+          fi
+
+          echo "Computed release name: ${release}"
+          echo "release_name=${release}" >> $GITHUB_OUTPUT
+          echo "release_tag=${release}" >> $GITHUB_OUTPUT
+
+      - name: Prepare artifact and metadata
+        id: prepare-artifact
+        run: |
+          set -euo pipefail
+          ARTIFACT="${{ github.workspace }}/PocketMine-MP.phar"
+          artifacts="$ARTIFACT"
+
+          if [ -f "$ARTIFACT" ]; then
+            sha=$(sha256sum "$ARTIFACT" | awk '{print $1}')
+            size_human=$(du -h "$ARTIFACT" | cut -f1)
+          else
+            sha="missing"
+            size_human="0B"
+          fi
+
+          changelog_rel="changelogs-karsa/${{ steps.get-pm-version.outputs.MCPE_VERSION }}.md"
+          if [ -f "${{ github.workspace }}/$changelog_rel" ]; then
+            changelog_message="Changelog: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/blob/${GITHUB_SHA}/$changelog_rel"
+          else
+            changelog_message="Changelog: Not provided"
+          fi
+
+          echo "artifact_sha256=$sha" >> $GITHUB_OUTPUT
+          echo "artifact_size_human=$size_human" >> $GITHUB_OUTPUT
+          echo "artifacts=$artifacts" >> $GITHUB_OUTPUT
+          echo "changelog_message=$changelog_message" >> $GITHUB_OUTPUT
+
+      - name: Create release with PHAR attached
+        uses: ncipollo/release-action@v1.20.0
+        with:
+          artifacts: ${{ steps.prepare-artifact.outputs.artifacts }}
+          commit: ${{ github.sha }}
+          draft: false
+          prerelease: ${{ steps.get-pm-version.outputs.PRERELEASE }}
+          name: ${{ steps.determine-release.outputs.release_name }}
+          tag: ${{ steps.determine-release.outputs.release_tag }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+          body: |
+             **For Minecraft: Bedrock Edition 1.20.0-${{ steps.get-pm-version.outputs.MCPE_VERSION }}**
+
+             - Commit: [${{ github.sha }}](${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }})
+             - Artifact: `PocketMine-MP.phar` — ${{ steps.prepare-artifact.outputs.artifact_size_human }} (SHA256: `${{ steps.prepare-artifact.outputs.artifact_sha256 }}`)
+
+             ${{ steps.prepare-artifact.outputs.changelog_message }}
+
+             ⚠️**When using this, please note that you are using a _PocketMine fork_.** You will not get support assistance on the pocketmine discord server if you have problems. You can only report problems by [creating a new issue](${{ github.server_url }}/${{ github.repository }}/issues/new?assignees=&labels=&projects=&template=bug_report.md&title=).
