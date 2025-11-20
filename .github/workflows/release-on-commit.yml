@@ -116,4 +116,4 @@ jobs:
 
              ${{ steps.prepare-artifact.outputs.changelog_message }}
 
-             ⚠️**When using this, please note that you are using a _PocketMine fork_.** You will not get support assistance on the pocketmine discord server if you have problems. You can only report problems by [creating a new issue](${{ github.server_url }}/${{ github.repository }}/issues/new?assignees=&labels=&projects=&template=bug_report.md&title=).
+             ⚠️**When using this, please note that you are using a _PocketMine fork_.** You will not get support assistance on the pocketmine discord server if you have problems. You can only report problems by [creating a new issue](${{ github.server_url }}/${{ github.repository }}/issues/new/choose).
