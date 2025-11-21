@@ -88,7 +88,9 @@ jobs:
 
           changelog_rel="changelogs-karsa/${{ steps.get-pm-version.outputs.MCPE_VERSION }}.md"
           if [ -f "${{ github.workspace }}/$changelog_rel" ]; then
-            changelog_message="Changelog: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/blob/${GITHUB_SHA}/$changelog_rel"
+            release_name="${{ steps.determine-release.outputs.release_name }}"
+            anchor=$(printf '%s' "$release_name" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9 -]//g' | tr ' ' '-' | sed 's/-\+/-/g; s/^-//; s/-$//')
+            changelog_message="Changelog: [$changelog_rel](${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/blob/${GITHUB_SHA}/$changelog_rel#$anchor)"
           else
             changelog_message="Changelog: Not provided"
           fi
