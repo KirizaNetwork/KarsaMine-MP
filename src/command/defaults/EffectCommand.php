@@ -26,6 +26,7 @@ namespace pocketmine\command\defaults;
 use pocketmine\command\Command;
 use pocketmine\command\CommandSender;
 use pocketmine\command\overload\BoolParameter;
+use pocketmine\command\overload\BranchingOverload;
 use pocketmine\command\overload\BranchingOverloadBuilder;
 use pocketmine\command\overload\IntRangeParameter;
 use pocketmine\command\overload\MappedParameter;
@@ -64,18 +65,32 @@ final class EffectCommand{
 					//differs not by the usage, but by the target selected
 					self::OVERLOAD_PERMS, self::removeEffect(...),
 				)
-				->executor([
+				->branch([
 					new MappedParameter("effect", "effect name", static fn(string $v) : Effect =>
 						StringToEffectParser::getInstance()->parse($v) ??
 						throw new ParameterParseException("Invalid effect name")
-					),
-					new IntRangeParameter("duration", "duration", 0, (int) (Limits::INT32_MAX / 20)),
-					new IntRangeParameter("amplifier", "amplifier", 0, 255),
-					new BoolParameter("bubbles", "bubbles")
+					)
+				], function(BranchingOverloadBuilder $builder) : BranchingOverload{
+					$amplifierParameter = new IntRangeParameter("amplifier", "amplifier", 0, 255);
+					$bubblesParameter = new BoolParameter("bubbles", "bubbles");
+					//TODO: would be nice if we could union this somehow?
+					return $builder
+						->executor([
+							new IntRangeParameter("duration", "duration", 0, (int) (Limits::INT32_MAX / 20)),
+							$amplifierParameter,
+							$bubblesParameter
 
-					//TODO: our permission system isn't granular enough for this right now - the permission required
-					//differs not by the usage, but by the target selected
-				], self::OVERLOAD_PERMS, self::modifyEffect(...))
+							//TODO: our permission system isn't granular enough for this right now - the permission required
+							//differs not by the usage, but by the target selected
+						], self::OVERLOAD_PERMS, self::modifyEffect(...))
+						->executor([
+							"infinite",
+							$amplifierParameter,
+							$bubblesParameter
+						], self::OVERLOAD_PERMS, self::modifyEffectInfinite(...))
+						->build();
+				}
+				)
 				->build(),
 			KnownTranslationFactory::pocketmine_command_effect_description(),
 		);
@@ -119,9 +134,28 @@ final class EffectCommand{
 			$effectManager->remove($effect);
 			$sender->sendMessage(KnownTranslationFactory::commands_effect_success_removed($effect->getName(), $player->getDisplayName()));
 		}else{
-			$instance = new EffectInstance($effect, $duration !== null ? $duration * 20 : null, $amplifier, $bubbles);
+			$infinite = false;
+			if($duration < 0){
+				$duration = null;
+				$infinite = true;
+			}
+			$instance = new EffectInstance($effect, $duration !== null ? $duration * 20 : null, $amplifier, $bubbles, infinite: $infinite);
 			$effectManager->add($instance);
-			Command::broadcastCommandMessage($sender, KnownTranslationFactory::commands_effect_success($effect->getName(), (string) $instance->getAmplifier(), $player->getDisplayName(), (string) ($instance->getDuration() / 20)));
+			if($infinite){
+				Command::broadcastCommandMessage($sender, KnownTranslationFactory::commands_effect_success_infinite($effect->getName(), (string) $instance->getAmplifier(), $player->getDisplayName()));
+			}else{
+				Command::broadcastCommandMessage($sender, KnownTranslationFactory::commands_effect_success($effect->getName(), (string) $instance->getAmplifier(), $player->getDisplayName(), (string) ($instance->getDuration() / 20)));
+			}
 		}
+	}
+
+	private static function modifyEffectInfinite(
+		CommandSender $sender,
+		string $target,
+		Effect $effect,
+		int $amplifier = 0,
+		bool $bubbles = true
+	) : void{
+		self::modifyEffect($sender, $target, $effect, -1, $amplifier, $bubbles);
 	}
 }

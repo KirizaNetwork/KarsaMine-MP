@@ -1,7 +1,6 @@
 [
     "language.name",
     "language.selected",
-    "commands.spawnpoint.success",
     "commands.time.query",
     "commands.whitelist.add.success",
     "commands.whitelist.disabled",

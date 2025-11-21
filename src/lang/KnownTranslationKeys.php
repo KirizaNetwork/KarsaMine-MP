@@ -60,6 +60,7 @@ final class KnownTranslationKeys{
 	public const COMMANDS_EFFECT_FAILURE_NOTACTIVE_ALL = "commands.effect.failure.notActive.all";
 	public const COMMANDS_EFFECT_NOTFOUND = "commands.effect.notFound";
 	public const COMMANDS_EFFECT_SUCCESS = "commands.effect.success";
+	public const COMMANDS_EFFECT_SUCCESS_INFINITE = "commands.effect.success.infinite";
 	public const COMMANDS_EFFECT_SUCCESS_REMOVED = "commands.effect.success.removed";
 	public const COMMANDS_EFFECT_SUCCESS_REMOVED_ALL = "commands.effect.success.removed.all";
 	public const COMMANDS_ENCHANT_NOITEM = "commands.enchant.noItem";
@@ -90,7 +91,6 @@ final class KnownTranslationKeys{
 	public const COMMANDS_SAVE_ENABLED = "commands.save.enabled";
 	public const COMMANDS_SEED_SUCCESS = "commands.seed.success";
 	public const COMMANDS_SETWORLDSPAWN_SUCCESS = "commands.setworldspawn.success";
-	public const COMMANDS_SPAWNPOINT_SUCCESS = "commands.spawnpoint.success";
 	public const COMMANDS_STOP_START = "commands.stop.start";
 	public const COMMANDS_TIME_ADDED = "commands.time.added";
 	public const COMMANDS_TIME_QUERY = "commands.time.query";
@@ -374,6 +374,7 @@ final class KnownTranslationKeys{
 	public const POCKETMINE_COMMAND_SEED_DESCRIPTION = "pocketmine.command.seed.description";
 	public const POCKETMINE_COMMAND_SETWORLDSPAWN_DESCRIPTION = "pocketmine.command.setworldspawn.description";
 	public const POCKETMINE_COMMAND_SPAWNPOINT_DESCRIPTION = "pocketmine.command.spawnpoint.description";
+	public const POCKETMINE_COMMAND_SPAWNPOINT_SUCCESS = "pocketmine.command.spawnpoint.success";
 	public const POCKETMINE_COMMAND_STATUS_DESCRIPTION = "pocketmine.command.status.description";
 	public const POCKETMINE_COMMAND_STOP_DESCRIPTION = "pocketmine.command.stop.description";
 	public const POCKETMINE_COMMAND_TELL_DESCRIPTION = "pocketmine.command.tell.description";

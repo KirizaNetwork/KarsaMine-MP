@@ -72,7 +72,7 @@ final class SpawnpointCommand{
 		$pos = Position::fromObject($cpos->floor(), $cpos->getWorld());
 		$target->setSpawn($pos);
 
-		Command::broadcastCommandMessage($sender, KnownTranslationFactory::commands_spawnpoint_success($target->getName(), (string) round($pos->x, 2), (string) round($pos->y, 2), (string) round($pos->z, 2)));
+		Command::broadcastCommandMessage($sender, KnownTranslationFactory::pocketmine_command_spawnpoint_success($target->getName(), (string) round($pos->x, 2), (string) round($pos->y, 2), (string) round($pos->z, 2)));
 	}
 
 	private static function setSpawnCoords(CommandSender $sender, string $target, RelativeXYZ $coordinates) : void{
@@ -86,7 +86,7 @@ final class SpawnpointCommand{
 		$pos = $coordinates->resolve($basePos);
 		$target->setSpawn(Position::fromObject($pos, $world));
 
-		Command::broadcastCommandMessage($sender, KnownTranslationFactory::commands_spawnpoint_success($target->getName(), (string) round($pos->x, 2), (string) round($pos->y, 2), (string) round($pos->z, 2)));
+		Command::broadcastCommandMessage($sender, KnownTranslationFactory::pocketmine_command_spawnpoint_success($target->getName(), (string) round($pos->x, 2), (string) round($pos->y, 2), (string) round($pos->z, 2)));
 
 	}
 }

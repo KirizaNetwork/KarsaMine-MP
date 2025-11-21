@@ -203,6 +203,14 @@ final class KnownTranslationFactory{
 		]);
 	}
 
+	public static function commands_effect_success_infinite(Translatable|string $param0, Translatable|string $param1, Translatable|string $param2) : Translatable{
+		return new Translatable(KnownTranslationKeys::COMMANDS_EFFECT_SUCCESS_INFINITE, [
+			0 => $param0,
+			1 => $param1,
+			2 => $param2,
+		]);
+	}
+
 	public static function commands_effect_success_removed(Translatable|string $param0, Translatable|string $param1) : Translatable{
 		return new Translatable(KnownTranslationKeys::COMMANDS_EFFECT_SUCCESS_REMOVED, [
 			0 => $param0,
@@ -382,15 +390,6 @@ final class KnownTranslationFactory{
 			0 => $param0,
 			1 => $param1,
 			2 => $param2,
-		]);
-	}
-
-	public static function commands_spawnpoint_success(Translatable|string $param0, Translatable|string $param1, Translatable|string $param2, Translatable|string $param3) : Translatable{
-		return new Translatable(KnownTranslationKeys::COMMANDS_SPAWNPOINT_SUCCESS, [
-			0 => $param0,
-			1 => $param1,
-			2 => $param2,
-			3 => $param3,
 		]);
 	}
 
@@ -1690,6 +1689,15 @@ final class KnownTranslationFactory{
 
 	public static function pocketmine_command_spawnpoint_description() : Translatable{
 		return new Translatable(KnownTranslationKeys::POCKETMINE_COMMAND_SPAWNPOINT_DESCRIPTION, []);
+	}
+
+	public static function pocketmine_command_spawnpoint_success(Translatable|string $param0, Translatable|string $param1, Translatable|string $param2, Translatable|string $param3) : Translatable{
+		return new Translatable(KnownTranslationKeys::POCKETMINE_COMMAND_SPAWNPOINT_SUCCESS, [
+			0 => $param0,
+			1 => $param1,
+			2 => $param2,
+			3 => $param3,
+		]);
 	}
 
 	public static function pocketmine_command_status_description() : Translatable{
