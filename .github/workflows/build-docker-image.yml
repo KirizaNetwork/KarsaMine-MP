@@ -70,7 +70,7 @@ jobs:
         run: echo NAME=$(echo "${GITHUB_REPOSITORY,,}") >> $GITHUB_OUTPUT
 
       - name: Build image for tag
-        uses: docker/build-push-action@v6.18.0
+        uses: docker/build-push-action@v6.19.2
         with:
           push: true
           context: ./pocketmine-mp
@@ -83,7 +83,7 @@ jobs:
 
       - name: Build image for major tag
         if: steps.channel.outputs.CHANNEL == 'stable'
-        uses: docker/build-push-action@v6.18.0
+        uses: docker/build-push-action@v6.19.2
         with:
           push: true
           context: ./pocketmine-mp
@@ -96,7 +96,7 @@ jobs:
 
       - name: Build image for minor tag
         if: steps.channel.outputs.CHANNEL == 'stable'
-        uses: docker/build-push-action@v6.18.0
+        uses: docker/build-push-action@v6.19.2
         with:
           push: true
           context: ./pocketmine-mp
@@ -109,7 +109,7 @@ jobs:
 
       - name: Build image for latest tag
         if: steps.channel.outputs.CHANNEL == 'stable'
-        uses: docker/build-push-action@v6.18.0
+        uses: docker/build-push-action@v6.19.2
         with:
           push: true
           context: ./pocketmine-mp
