@@ -23,7 +23,7 @@ jobs:
           persist-credentials: true
 
       - name: Setup PHP
-        uses: shivammathur/setup-php@2.36.0
+        uses: shivammathur/setup-php@2.37.0
         with:
           php-version: ${{ env.PHP_VERSION }}
 
@@ -101,7 +101,7 @@ jobs:
           echo "changelog_message=$changelog_message" >> $GITHUB_OUTPUT
 
       - name: Create release with PHAR attached
-        uses: ncipollo/release-action@v1.20.0
+        uses: ncipollo/release-action@v1.21.0
         with:
           artifacts: ${{ steps.prepare-artifact.outputs.artifacts }}
           commit: ${{ github.sha }}
